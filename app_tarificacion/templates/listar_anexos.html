@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+    {% block title %}
+    <title>Mantener Datos Anexos</title>
+    {% endblock title %}
+    {% block css %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/listar_anexo.css' %}">
+    {% endblock css %}
+    {% block header %}
+    <!-- Header -->
+    <header class="header">
+        <h2>Tarificación Telefónica</h2>
+        <div class="welcome">
+            <span>Bienvenido</span>
+            <span class="admin">Administrador</span>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Bar -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-content">
+            <a href="/">< Inicio</a>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row">
+          <!-- Main Content -->
+          <main role="main" class="col-12 main-content">
+              <div class="table-container">
+                  <div class="top-bar">
+                      <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_anexo' %}'">Agregar Anexo</button>
+                      <h3>MANTENER DATOS ANEXO</h3>
+                      <form id="search-form" hx-get="{% url 'anexos' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results">
+                        <input type="text" name="query" class="form-control" placeholder="Buscar...">
+                      </form>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th style="width: 10%;">Id. Anexo</th>
+                              <th style="width: 15%;">Número Anexo</th>
+                              <th style="width: 15%;">Usuario</th>
+                              <th style="width: 15%;">Código Unidad</th>
+                              <th style="width: 10%;">Cargo Fijo</th> <!-- Nueva columna para cargo fijo -->
+                              <th style="width: 13%;">Estado</th> <!-- Nueva columna para estado -->
+                              <th style="width: 25%;">Acciones</th>
+                          </tr>
+                      </thead>
+                      <tbody id="anexo-results">
+                          {% for anexo in anexos %}
+                          <tr>
+                              <td>{{ anexo.id_anexo }}</td>
+                              <td>{{ anexo.numero_anexo }}</td>
+                              <td>{{ anexo.usuario }}</td>
+                              <td>{{ anexo.codunidad }}</td>
+                              <td>{{ anexo.cargo_fijo }}</td> <!-- Mostrar el cargo fijo del anexo -->
+                              <td>{{ anexo.estado_anexo }}</td> <!-- Mostrar el estado del anexo -->
+                              <td>
+                                  <div class="btn-group">
+                                      <a href="{% url 'modificar_anexo' id=anexo.id_anexo %}" class="btn btn-warning">Modificar Anexo</a>
+                                      <form action="{% url 'eliminar_anexo' id=anexo.id_anexo %}" method="POST" style="display:inline;">
+                                          {% csrf_token %}
+                                          <button type="submit" class="btn btn-danger">Eliminar Anexo</button>
+                                      </form>
+                                  </div>
+                              </td>
+                          </tr>
+                          {% empty %}
+                          <tr>
+                              <td colspan="7">No hay anexos disponibles</td> <!-- Ajustar colspan a 7 -->
+                          </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+                  
+                  
+                </div>
+                
+              </div>
+          </main>
+      </div>
+  </div>
+  {% endblock header %}
+  {% block js %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endblock js %}
+

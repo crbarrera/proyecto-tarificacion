@@ -1,0 +1,116 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevent scrolling */
+}
+.container-fluid {
+    height: calc(100% - 56px); /* Adjusting for header height */
+}
+.row {
+    height: 100%;
+}
+.main-content {
+    height: 100%;
+    background-color: #afb2b4; /* Light background */
+    overflow-y: auto; /* Allow scrolling within main content */
+    width: 100%; /* Occupy full width */
+    padding: 20px; /* Ensure padding matches breadcrumb */
+}
+.header {
+    height: 56px; /* Adjust as needed */
+    background-color: #cdd0d3; /* Gradient from dark to light grey */
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.header h2 {
+    font-weight: bold;
+    color: black;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.header .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    right: 20px;
+    text-align: right;
+    font-weight: bold;
+    color: black;
+}
+.header .admin {
+    color: red;
+}
+.breadcrumb-bar {
+    background-color: #838486;
+    padding: 5px 0;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 0; /* Remove margin to avoid white bar */
+}
+.breadcrumb-bar .breadcrumb-content {
+    padding-left: 40px; /* Ensure padding only for the content */
+}
+.breadcrumb-bar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+.breadcrumb-bar a:hover {
+    text-decoration: underline;
+}
+.table-container {
+    padding: 20px;
+}
+.table-container .top-bar {
+    display: flex;
+    justify-content: center; /* Center the title */
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+.table-container .top-bar h3 {
+    margin: 0;
+    color: #000000; /* Black */
+    font-weight: bold;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.table-container .top-bar .form-control {
+    width: auto;
+    border: 1px solid black; /* Black border for search bar */
+    position: absolute;
+    right: 0;
+}
+.table-responsive {
+    overflow-x: auto;
+}
+.table {
+    border: 1px solid black; /* Black border for table */
+}
+.table thead th {
+    background-color: #838486; /* Dark grey */
+    color: white;
+    border: 1px solid black; /* Black border for table headers */
+}
+.table tbody tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light grey for odd rows */
+}
+.table tbody tr:nth-child(even) {
+    background-color: #ffffff; /* White for even rows */
+}
+.table tbody td {
+    color: #343a40; /* Dark grey text */
+    border: 1px solid black; /* Black border for table cells */
+}
+.table tbody tr:hover {
+    background-color: #e9ecef; /* Light grey on hover */
+}
+.table-container .table {
+    margin-top: 20px; /* Add space between title and table */
+}

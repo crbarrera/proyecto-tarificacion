@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+    <title>Sistema de Tarificación</title>
+{% endblock title %}
+
+{% block css %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+{% endblock css %}
+<body>
+    <!-- Header -->
+    {% block header %}
+    <header class="header">
+        <h2>Tarificación Telefónica</h2>
+            <div class="welcome">
+                <span>Bienvenido</span>
+                {% if rol_user %}
+                <p style="color: red;">{{ rol_user }}</p>
+                {% else %}
+                <p>No has iniciado sesión.</p>
+                {% endif %}
+            </div>
+            <div class="cerrar-sesion">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit">Cerrar Sesión</button>
+                </form>
+            </div>
+    </header>
+    {% endblock header %}
+    {% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        {% if rol_user == "Responsable de Unidad" %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Consultar tarificación</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/usuarios">Mantener datos de usuarios</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/proveedores">Mantener proveedores de telefonía</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/codigos_unidad">Mantener códigos de unidad</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/cuentas_presupuestarias">Mantener cuentas presupuestarias</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/anexos">Mantener registros de anexos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Calcular tarificación</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Consultar tarificación</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Crear reporte de tarificación general</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Consultar tráfico de llamadas por proveedor de telefonía</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/responsables_unidad">Listar responsables de unidad</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/anexos_activos">Listar anexos en servicio</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-9 px-4 main-content">
+                <div class="center-box">
+                    <div>
+                        <h1 class="h2">¿Qué vas a hacer hoy?</h1>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    {% endblock content %}
+    {% block js %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endblock js %}
+
+</body>
+</html>

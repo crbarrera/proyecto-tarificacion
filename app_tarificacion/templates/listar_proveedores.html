@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+    {% block title %}
+    <title>Mantener Datos Proveedor</title>
+    {% endblock title %}
+    {% block css %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/listar_proveedor.css' %}">
+    {% endblock css %}
+
+    {% block header %}
+    <!-- Header -->
+    <header class="header">
+        <h2>Tarificación Telefónica</h2>
+        <div class="welcome">
+            <span>Bienvenido</span>
+            <span class="admin">Administrador</span>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Bar -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-content">
+            <a href="/">< Inicio</a>
+        </div>
+    </div>
+    {% endblock header %}
+    {% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Content -->
+            <main role="main" class="col-12 main-content">
+                <div class="table-container">
+                    <div class="top-bar">
+                        <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_proveedor' %}'">Agregar Proveedor</button>
+                        <h3>MANTENER DATOS PROVEEDOR</h3>
+                        {% comment %} <form id="search-form" hx-get="{% url 'anexos_servicio' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results"> {% endcomment %}
+                          <input type="text" name="query" class="form-control" placeholder="Buscar...">
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Id. Proveedor</th>
+                                <th style="width: 25%;">Nombre</th>
+                                <th style="width: 20%;">Tarifa Celular</th>
+                                <th style="width: 20%;">Tarifa SLM</th>
+                                <th style="width: 20%;">Tarifa LDI</th>
+                                <th style="width: 20%;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="anexo-results">
+                            {% for proveedor in proveedores %}
+                            <tr>
+                                <td>{{ proveedor.id_proveedor }}</td>
+                                <td>{{ proveedor.nombre_proveedor }}</td>
+                                <td>{{ proveedor.tarifa_cel }}</td>
+                                <td>{{ proveedor.tarifa_slm }}</td>
+                                <td>{{ proveedor.tarifa_ldi }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'modificar_proveedor' id=proveedor.id_proveedor %}" class="btn btn-warning">Modificar Proveedor</a>
+                                        <form action="{% url 'eliminar_proveedor' id=proveedor.id_proveedor %}" method="POST" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Eliminar Proveedor</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">No hay proveedores disponibles</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                  </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    {% endblock content %}
+    {% block js %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endblock js %}
+

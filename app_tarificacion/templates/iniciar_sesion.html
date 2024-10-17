@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% load static %}
+
+{% block title %}<title>Inicio Sesion</title>{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/inicio_sesion.css' %}">
+{% endblock css %}
+<!-- Header -->
+{% block header %}
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+</header>
+{% endblock header %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-md-12 ml-sm-auto col-lg-12 px-4 main-content">
+          <div class="center-box">
+              <div class="login-container">
+                  <h2>Iniciar Sesión</h2>
+                  <form method="post">
+                      {% csrf_token %}
+                      
+                      <!-- Campo de usuario -->
+                      <div class="form-group">
+                          <label for="id_username">Usuario:</label>
+                          {{ form.username|add_class:"form-control" }}
+                      </div>
+                      
+                      <!-- Campo de contraseña -->
+                      <div class="form-group">
+                          <label for="id_password">Contraseña:</label>
+                          {{ form.password|add_class:"form-control" }}
+                      </div>
+      
+                      <br>
+                      <!-- Botón de envío -->
+                      <button class="btn btn-primary" type="submit">Iniciar Sesión</button>
+                      
+                      <!-- Manejo de errores -->
+                      {% if form.errors %}
+                          <div class="alert alert-danger mt-3">
+                              <ul>
+                                  {% for field in form %}
+                                      {% for error in field.errors %}
+                                          <li>{{ error }}</li>
+                                      {% endfor %}
+                                  {% endfor %}
+                                  {% for error in form.non_field_errors %}
+                                      <li>{{ error }}</li>
+                                  {% endfor %}
+                              </ul>
+                          </div>
+                      {% endif %}
+                  </form>
+              </div>
+          </div>
+      </main>
+      
+    </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock js %}

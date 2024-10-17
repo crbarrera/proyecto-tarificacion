@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calcular Tarificación por Unidad</title>
+</head>
+<body>
+    <h1>Calcular Tarificación por Unidad</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Este form debe contener solo el campo de Código de Unidad -->
+        <button type="submit">Calcular</button>
+    </form>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div>{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

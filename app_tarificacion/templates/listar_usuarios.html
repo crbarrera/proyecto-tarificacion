@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+    {% block title %}<title>Mantener Datos Usuarios</title>{% endblock title %}
+    {% block css %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/listar_usuarios.css' %}">
+    {% endblock css %}
+    {% block header %}
+    <!-- Header -->
+    <header class="header">
+        <h2>Tarificación Telefónica</h2>
+        <div class="welcome">
+            <span>Bienvenido</span>
+            <span class="admin">Administrador</span>
+        </div>
+    </header>
+    {% endblock header %}
+    {% block content %}
+    <!-- Breadcrumb Bar -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-content">
+            <a href="/"> < Inicio</a>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Content -->
+            <main role="main" class="col-12 main-content">
+                <div class="table-container">
+                    <div class="top-bar">
+                        <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_usuario' %}'">Agregar Usuario</button>
+                        <h3>MANTENER DATOS USUARIOS</h3>
+                        {% comment %} <form id="search-form" hx-get="{% url 'anexos_servicio' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results"> {% endcomment %}
+                          <input type="text" name="query" class="form-control" placeholder="Buscar...">
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">Id. Usuario</th>
+                                <th style="width: 25%;">Username</th>
+                                <th style="width: 20%;">Password</th>
+                                <th style="width: 20%;">Correo</th>
+                                <th style="width: 20%;">Rol</th>
+                                <th style="width: 20%;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="anexo-results">
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>{{ usuario.id_usuario }}</td>
+                                <td>{{ usuario.username }}</td>
+                                <td>**********</td> <!-- 10 asteriscos fijos -->
+                                <td>{{ usuario.email_usuario }}</td>
+                                <td>{{ usuario.rol_usuario }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <!-- Comentado para futuras funcionalidades -->
+                                        <a href="{% url 'modificar_usuario' id=usuario.id_usuario %}" class="btn btn-warning">Modificar Usuario</a>
+                                        <form action="{% url 'eliminar_usuario' id=usuario.id_usuario %}" method="POST" style="display:inline;"> 
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Eliminar Usuario</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6">No hay usuarios disponibles</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                  </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    {% endblock content %}
+    {% block js %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endblock js %}
+</body>
+</html>

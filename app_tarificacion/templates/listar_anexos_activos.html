@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+<title>Anexos Activos</title>
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/listar_responsables_unidad.css' %}">
+{% endblock css %}
+{% block header %}
+<!-- Header -->
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+    <div class="welcome">
+        <span>Bienvenido</span>
+        <span class="admin">Administrador</span>
+    </div>
+</header>
+{% endblock header %}
+{% block content %}
+<!-- Breadcrumb Bar -->
+<div class="breadcrumb-bar">
+    <div class="breadcrumb-content">
+        <a href="/">< Inicio</a>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-12 main-content">
+            <div class="table-container">
+                <div class="top-bar">
+                    <h3>ANEXOS ACTIVOS</h3>
+                    {% comment %} <form id="search-form" hx-get="{% url 'anexos_servicio' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results"> {% endcomment %}
+                        <input type="text" name="query" class="form-control" placeholder="Buscar...">
+                    </form>
+                </div>
+                <div class="table-container d-flex">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Id. Anexo</th>
+                                    <th>Número Anexo</th>
+                                    <th>Usuario</th>
+                                    <th>Código Unidad</th>
+                                    <th>Cargo Fijo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="anexo-results">
+                                {% for anexo in anexos %}
+                                <tr>
+                                    <td>{{ anexo.id_anexo }}</td>
+                                    <td>{{ anexo.numero_anexo }}</td>
+                                    <td>{{ anexo.usuario }}</td>
+                                    <td>{{ anexo.codunidad }}</td>
+                                    <td>{{ anexo.cargo_fijo }}</td>
+                                    <td>{{ anexo.estado_anexo }}</td>
+                                    <td><button class="btn btn-warning" onclick="mostrarDetalles('{{ anexo.numero_anexo }}', '{{ anexo.usuario }}', '{{ anexo.codunidad }}', '{{ anexo.cargo_fijo }}', '{{ anexo.estado_anexo }}')">Seleccionar Anexo</button></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7">No hay anexos activos disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="side-text col-4">
+                        <h3>Detalle del anexo:</h3>
+                        <div id="detalles-anexo">
+                            <p>Selecciona un anexo para ver los detalles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script>
+    function mostrarDetalles(numero_anexo, usuario, codunidad, cargo_fijo, estado_anexo) {
+        const detallesDiv = document.getElementById('detalles-anexo');
+        detallesDiv.innerHTML = `
+            <p><strong>Número de Anexo:</strong> ${numero_anexo}</p>
+            <p><strong>Usuario:</strong> ${usuario}</p>
+            <p><strong>Código Unidad:</strong> ${codunidad}</p>
+            <p><strong>Cargo Fijo:</strong> ${cargo_fijo}</p>
+            <p><strong>Estado:</strong> ${estado_anexo}</p>
+        `;
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock js %}

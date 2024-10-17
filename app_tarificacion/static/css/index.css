@@ -1,0 +1,117 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevent scrolling */
+}
+.container-fluid {
+    height: calc(100% - 56px); /* Adjusting for header height */
+}
+.row {
+    height: 100%;
+}
+.sidebar {
+    height: 100%;
+    background-color: #838486; /* Dark grey */
+}
+.sidebar .nav-link {
+    color: white;
+    font-weight: bold;
+}
+.main-content {
+    height: 100%;
+    background-color: #afb2b4; /* Slightly lighter grey */
+    overflow-y: auto; /* Allow scrolling within main content */
+}
+.nav-item {
+    border-bottom: 1px solid #000000;
+    padding: 4px 0;
+}
+.header {
+    height: 56px; /* Adjust as needed */
+    background-color: #cdd0d3; /* Light grey */
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.header h2 {
+    font-weight: bold;
+    color: black;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.header .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    right: 20px;
+    text-align: right;
+    font-weight: bold;
+}
+.header .cerrar-sesion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Cambia align-items a flex-start */
+    position: absolute;
+    left: 20px; /* Cambia right a left */
+    text-align: left;
+    font-weight: bold;
+}
+
+.header .admin {
+    color: red;
+}
+.center-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.center-box div {
+    border: 1px solid #000000;
+    padding: 20px;
+    text-align: center;
+    width: 50%; /* Adjust as needed */
+    height: 50%; /* Adjust as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0e3e5; /* Even lighter grey */
+}
+.center-box h1 {
+    font-weight: bold;
+    color: black;
+}
+.btn-primary {
+  width: 100%;
+  background-color: #333333; /* Dark grey */
+  border-color: #333333; /* Dark grey */
+}
+.btn-primary:hover {
+    background-color: #555555; /* Slightly lighter grey */
+    border-color: #555555; /* Slightly lighter grey */
+}
+.button {
+    background-color: #4CAF50; /* Verde */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alineación a la izquierda */
+    margin-left: 20px; /* Asegura que los botones estén alineados a la izquierda de la página */
+}
