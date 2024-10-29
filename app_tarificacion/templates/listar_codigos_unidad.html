@@ -1,85 +1,112 @@
 {% extends "base.html" %}
 {% load static %}
-    {% block title %}
-    <title>Mantener Datos Codigos Unidad</title>
-    {% endblock title %}
-    {% block css %}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/listar_codigos_unidad.css' %}">
-    {% endblock css %}
-    {% block header %}
-    <!-- Header -->
-    <header class="header">
-        <h2>Tarificación Telefónica</h2>
-        <div class="welcome">
-            <span>Bienvenido</span>
-            <span class="admin">Administrador</span>
-        </div>
-    </header>
-    {% endblock header %}
-    {% block content %}
-    <!-- Breadcrumb Bar -->
-    <div class="breadcrumb-bar">
-        <div class="breadcrumb-content">
-            <a href="/">< Inicio</a>
-        </div>
+{% block title %}
+<title>Mantener Datos Codigos Unidad</title>
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/listar_codigos_unidad.css' %}">
+{% endblock css %}
+{% block header %}
+<!-- Header -->
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+    <div class="welcome">
+        <span>Bienvenido</span>
+        <span class="admin">Administrador</span>
     </div>
+</header>
+{% endblock header %}
+{% block content %}
+<!-- Breadcrumb Bar -->
+<div class="breadcrumb-bar">
+    <div class="breadcrumb-content">
+        <a href="/">< Inicio</a>
+    </div>
+</div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Main Content -->
-            <main role="main" class="col-12 main-content">
-                <div class="table-container">
-                    <div class="top-bar">
-                        <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_codigo_unidad' %}'">Agregar Codigos Unidad</button>
-                        <h3>MANTENER DATOS CODIGOS UNIDAD</h3>
-                        {% comment %} <form id="search-form" hx-get="{% url 'anexos_servicio' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results"> {% endcomment %}
-                          <input type="text" name="query" class="form-control" placeholder="Buscar...">
-                        </form>
-                    </div>
-                    <div class="table-responsive">
-                      <table class="table table-striped">
-                          <thead>
-                              <tr>
-                                  <th style="width: 15%;">Id. Código Unidad</th>
-                                  <th style="width: 25%;">Nombre Unidad</th>
-                                  <th style="width: 20%;">Cuenta Presupuestaria</th>
-                                  <th style="width: 20%;">Acciones</th>
-                              </tr>
-                          </thead>
-                          <tbody id="anexo-results">
-                            {% for codigo_unidad in codigos_unidad %}
-                            <tr>
-                                <td>{{ codigo_unidad.id_codigo }}</td>
-                                <td>{{ codigo_unidad.nombre_codigo }}</td>
-                                <td>{{ codigo_unidad.ctapresu}}</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="{% url 'modificar_codigo_unidad' id=codigo_unidad.id_codigo %}" class="btn btn-warning">Modificar Cod Unidad</a>
-                                        <form action="{% url 'eliminar_codigo_unidad' id=codigo_unidad.id_codigo %}" method="POST" style="display:inline;">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger">Eliminar Cod Unidad</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4">No hay códigos de unidad disponibles</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                      </table>
-                  </div>                  
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-12 main-content">
+            <div class="table-container">
+                <div class="top-bar">
+                    <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_codigo_unidad' %}'">Agregar Codigos Unidad</button>
+                    <h3>MANTENER DATOS CODIGOS UNIDAD</h3>
+                    <form id="search-form" hx-get="{% url 'codigos_unidad' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results">
+                      <input type="text" name="query" class="form-control" placeholder="Buscar...">
+                    </form>
                 </div>
-            </main>
-        </div>
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                      <thead>
+                          <tr>
+                              <th style="width: 15%;">Id. Código Unidad</th>
+                              <th style="width: 25%;">Nombre Unidad</th>
+                              <th style="width: 20%;">Cuenta Presupuestaria</th>
+                              <th style="width: 20%;">Acciones</th>
+                          </tr>
+                      </thead>
+                      <tbody id="anexo-results">
+                        {% for codigo_unidad in codigos_unidad %}
+                        <tr>
+                            <td>{{ codigo_unidad.id_codigo }}</td>
+                            <td>{{ codigo_unidad.nombre_codigo }}</td>
+                            <td>{{ codigo_unidad.ctapresu}}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'modificar_codigo_unidad' id=codigo_unidad.id_codigo %}" class="btn btn-warning">Modificar Cod Unidad</a>
+                                    <button type="button" class="btn btn-danger" onclick="confirmarEliminacion('{{ codigo_unidad.id_codigo }}', '{{ codigo_unidad.nombre_codigo }}')">Eliminar Cod Unidad</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No hay códigos de unidad disponibles</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+              </div>                  
+            </div>
+        </main>
     </div>
-    {% endblock content %}
-    {% block js %}
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    {% endblock js %}
-</body>
-</html>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmarEliminacionModal" tabindex="-1" role="dialog" aria-labelledby="confirmarEliminacionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">Confirmar Eliminación</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ¿Seguro que deseas eliminar el código de unidad <span id="nombreCodigo"></span>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <form id="eliminarForm" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Sí</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+  function confirmarEliminacion(idCodigo, nombreCodigo) {
+    document.getElementById('nombreCodigo').textContent = nombreCodigo;
+    const eliminarForm = document.getElementById('eliminarForm');
+    eliminarForm.action = "{% url 'eliminar_codigo_unidad' 0 %}".replace('0', idCodigo);
+    $('#confirmarEliminacionModal').modal('show');
+  }
+</script>
+{% endblock js %}

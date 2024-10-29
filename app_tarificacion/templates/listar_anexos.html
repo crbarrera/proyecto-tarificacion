@@ -1,92 +1,117 @@
 {% extends "base.html" %}
 {% load static %}
-    {% block title %}
-    <title>Mantener Datos Anexos</title>
-    {% endblock title %}
-    {% block css %}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/listar_anexo.css' %}">
-    {% endblock css %}
-    {% block header %}
-    <!-- Header -->
-    <header class="header">
-        <h2>Tarificación Telefónica</h2>
-        <div class="welcome">
-            <span>Bienvenido</span>
-            <span class="admin">Administrador</span>
-        </div>
-    </header>
-
-    <!-- Breadcrumb Bar -->
-    <div class="breadcrumb-bar">
-        <div class="breadcrumb-content">
-            <a href="/">< Inicio</a>
-        </div>
+{% block title %}
+<title>Mantener Datos Anexos</title>
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/listar_anexo.css' %}">
+{% endblock css %}
+{% block header %}
+<!-- Header -->
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+    <div class="welcome">
+        <span>Bienvenido</span>
+        <span class="admin">Administrador</span>
     </div>
+</header>
 
-    <div class="container-fluid">
-      <div class="row">
-          <!-- Main Content -->
-          <main role="main" class="col-12 main-content">
-              <div class="table-container">
-                  <div class="top-bar">
-                      <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_anexo' %}'">Agregar Anexo</button>
-                      <h3>MANTENER DATOS ANEXO</h3>
-                      <form id="search-form" hx-get="{% url 'anexos' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results">
-                        <input type="text" name="query" class="form-control" placeholder="Buscar...">
-                      </form>
-                  </div>
-                  <div class="table-responsive">
-                    <table class="table table-striped">
-                      <thead>
-                          <tr>
-                              <th style="width: 10%;">Id. Anexo</th>
-                              <th style="width: 15%;">Número Anexo</th>
-                              <th style="width: 15%;">Usuario</th>
-                              <th style="width: 15%;">Código Unidad</th>
-                              <th style="width: 10%;">Cargo Fijo</th> <!-- Nueva columna para cargo fijo -->
-                              <th style="width: 13%;">Estado</th> <!-- Nueva columna para estado -->
-                              <th style="width: 25%;">Acciones</th>
-                          </tr>
-                      </thead>
-                      <tbody id="anexo-results">
-                          {% for anexo in anexos %}
-                          <tr>
-                              <td>{{ anexo.id_anexo }}</td>
-                              <td>{{ anexo.numero_anexo }}</td>
-                              <td>{{ anexo.usuario }}</td>
-                              <td>{{ anexo.codunidad }}</td>
-                              <td>{{ anexo.cargo_fijo }}</td> <!-- Mostrar el cargo fijo del anexo -->
-                              <td>{{ anexo.estado_anexo }}</td> <!-- Mostrar el estado del anexo -->
-                              <td>
-                                  <div class="btn-group">
-                                      <a href="{% url 'modificar_anexo' id=anexo.id_anexo %}" class="btn btn-warning">Modificar Anexo</a>
-                                      <form action="{% url 'eliminar_anexo' id=anexo.id_anexo %}" method="POST" style="display:inline;">
-                                          {% csrf_token %}
-                                          <button type="submit" class="btn btn-danger">Eliminar Anexo</button>
-                                      </form>
-                                  </div>
-                              </td>
-                          </tr>
-                          {% empty %}
-                          <tr>
-                              <td colspan="7">No hay anexos disponibles</td> <!-- Ajustar colspan a 7 -->
-                          </tr>
-                          {% endfor %}
-                      </tbody>
-                  </table>
-                  
-                  
-                </div>
-                
+<!-- Breadcrumb Bar -->
+<div class="breadcrumb-bar">
+    <div class="breadcrumb-content">
+        <a href="/">< Inicio</a>
+    </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+      <!-- Main Content -->
+      <main role="main" class="col-12 main-content">
+          <div class="table-container">
+              <div class="top-bar">
+                  <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_anexo' %}'">Agregar Anexo</button>
+                  <h3>MANTENER DATOS ANEXO</h3>
+                  <form id="search-form" hx-get="{% url 'listar_responsables_unidad' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results">
+                    <input type="text" name="query" class="form-control" placeholder="Buscar...">
+                  </form>
               </div>
-          </main>
-      </div>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                      <tr>
+                          <th style="width: 10%;">Id. Anexo</th>
+                          <th style="width: 15%;">Número Anexo</th>
+                          <th style="width: 15%;">Usuario</th>
+                          <th style="width: 15%;">Código Unidad</th>
+                          <th style="width: 10%;">Cargo Fijo</th>
+                          <th style="width: 13%;">Estado</th>
+                          <th style="width: 25%;">Acciones</th>
+                      </tr>
+                  </thead>
+                  <tbody id="anexo-results">
+                      {% for anexo in anexos %}
+                      <tr>
+                          <td>{{ anexo.id_anexo }}</td>
+                          <td>{{ anexo.numero_anexo }}</td>
+                          <td>{{ anexo.usuario }}</td>
+                          <td>{{ anexo.codunidad }}</td>
+                          <td>{{ anexo.cargo_fijo }}</td>
+                          <td>{{ anexo.estado_anexo }}</td>
+                          <td>
+                              <div class="btn-group">
+                                  <a href="{% url 'modificar_anexo' id=anexo.id_anexo %}" class="btn btn-warning">Modificar Anexo</a>
+                                  <button type="button" class="btn btn-danger" onclick="confirmarEliminacion('{{ anexo.id_anexo }}', '{{ anexo.numero_anexo }}')">Eliminar Anexo</button>
+                              </div>
+                          </td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                          <td colspan="7">No hay anexos disponibles</td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+            </div>
+          </div>
+      </main>
   </div>
-  {% endblock header %}
-  {% block js %}
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    {% endblock js %}
+</div>
 
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmarEliminacionModal" tabindex="-1" role="dialog" aria-labelledby="confirmarEliminacionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">Confirmar Eliminación</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        ¿Seguro que deseas eliminar el anexo <span id="numeroAnexo"></span>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+        <form id="eliminarForm" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Sí</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock header %}
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+  function confirmarEliminacion(idAnexo, numeroAnexo) {
+    document.getElementById('numeroAnexo').textContent = numeroAnexo;
+    const eliminarForm = document.getElementById('eliminarForm');
+    eliminarForm.action = "{% url 'eliminar_anexo' 0 %}".replace('0', idAnexo);
+    $('#confirmarEliminacionModal').modal('show');
+  }
+</script>
+{% endblock js %}

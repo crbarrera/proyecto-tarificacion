@@ -45,11 +45,15 @@ class CustomLogoutView(LogoutView):
 
 @login_required
 def listar_usuarios(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_usuarios', [out_cur])
+    if query:
+        cursor.callproc('buscar_usuarios', [query, out_cur])
+    else:
+        cursor.callproc('listar_usuarios', [out_cur])
 
     usuarios = []
 
@@ -155,11 +159,15 @@ def eliminar_usuario(request, id):
 
 @login_required
 def listar_proveedores(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_proveedores', [out_cur])
+    if query:
+        cursor.callproc('buscar_proveedores', [query, out_cur])
+    else:
+        cursor.callproc('listar_proveedores', [out_cur])
 
     proveedores = []
 
@@ -174,7 +182,7 @@ def listar_proveedores(request):
         })
 
     return render(request, 'listar_proveedores.html', {'proveedores': proveedores})
-
+  
 @login_required
 def crear_proveedor(request):
     if request.method == 'POST':
@@ -242,11 +250,15 @@ def eliminar_proveedor(request, id):
 
 @login_required
 def listar_codigos_unidad(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_codigos_unidad', [out_cur])
+    if query:
+        cursor.callproc('buscar_codigos_unidad', [query, out_cur])
+    else:
+        cursor.callproc('listar_codigos_unidad', [out_cur])
 
     codigos_unidad = []
 
@@ -324,11 +336,15 @@ def eliminar_codigo_unidad(request, id):
 
 @login_required
 def listar_cuentas_presupuestarias(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_cuentas_presupuestarias', [out_cur])
+    if query:
+        cursor.callproc('buscar_cuentas_presupuestarias', [query, out_cur])
+    else:
+        cursor.callproc('listar_cuentas_presupuestarias', [out_cur])
 
     cuentas_presupuestarias = []
 
@@ -399,11 +415,15 @@ def eliminar_cuenta_presupuestaria(request, id):
 
 @login_required
 def listar_anexos(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_anexos', [out_cur])
+    if query:
+        cursor.callproc('buscar_anexos', [query, out_cur])
+    else:
+        cursor.callproc('listar_anexos', [out_cur])
 
     anexos = []
 
@@ -494,11 +514,15 @@ def eliminar_anexo(request, id):
 
 @login_required
 def listar_responsables_unidad(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_responsables_unidad', [out_cur])
+    if query:
+        cursor.callproc('buscar_responsables_unidad', [query, out_cur])
+    else:
+        cursor.callproc('listar_responsables_unidad', [out_cur])
 
     responsables = []
 
@@ -514,12 +538,17 @@ def listar_responsables_unidad(request):
     return render(request, 'listar_responsables_unidad.html', {'responsables': responsables})
 
 @login_required
+
 def listar_anexos_activos(request):
+    query = request.GET.get('query', '')
     django_cursor = connection.cursor()
     cursor = django_cursor.connection.cursor()
     out_cur = django_cursor.connection.cursor()
 
-    cursor.callproc('listar_anexos_activos', [out_cur])
+    if query:
+        cursor.callproc('buscar_anexos_activos', [query, out_cur])
+    else:
+        cursor.callproc('listar_anexos_activos', [out_cur])
 
     anexos = []
 
@@ -537,4 +566,3 @@ def listar_anexos_activos(request):
         })
 
     return render(request, 'listar_anexos_activos.html', {'anexos': anexos})
-
