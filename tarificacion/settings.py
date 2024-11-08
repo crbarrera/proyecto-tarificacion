@@ -88,6 +88,9 @@ DATABASES = {
     }
 }
 
+USE_TZ = True
+
+
 AUTH_USER_MODEL = 'app_tarificacion.Usuario'
 
 AUTHENTICATION_BACKENDS = [
@@ -138,4 +141,15 @@ LOGIN_URL = '/login/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# Configuración de correo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'  # Esto es literal, no tu nombre de usuario
+EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')  # Obtén la clave API de las variables de entorno
+DEFAULT_FROM_EMAIL = 'cr.barrera@duocuc.cl'
 

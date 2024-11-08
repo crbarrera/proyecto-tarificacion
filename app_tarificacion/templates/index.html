@@ -40,7 +40,10 @@
                     <ul class="nav flex-column">
                         {% if rol_user == "Responsable de Unidad" %}
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Consultar tarificación</a>
+                          <a class="nav-link" href="/consultar_tarificacion_anexo">Consultar tarificación por Anexo</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="/consultar_tarificacion_codigo">Consultar tarificación Cod. de Unidad</a>
                         </li>
                         {% else %}
                         <li class="nav-item">
@@ -59,16 +62,19 @@
                             <a class="nav-link" href="/anexos">Mantener registros de anexos</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Calcular tarificación</a>
+                            <a class="nav-link" href="/calcular_tarificacion">Calcular tarificación</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Consultar tarificación</a>
+                            <a class="nav-link" href="/consultar_tarificacion_anexo">Consultar tarificación por Anexo</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Crear reporte de tarificación general</a>
+                          <a class="nav-link" href="/consultar_tarificacion_codigo">Consultar tarificación Cod. de Unidad</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Consultar tráfico de llamadas por proveedor de telefonía</a>
+                            <a class="nav-link" href="/generar_reportes">Generar reportes de tarificación</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/consultar_trafico_por_proveedor">Consultar tráfico de llamadas por proveedor de telefonía</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/responsables_unidad">Listar responsables de unidad</a>

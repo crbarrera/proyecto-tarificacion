@@ -3,13 +3,13 @@ from django.db import models
 
 class Ctapresu(models.Model):
     id_cuenta = models.AutoField(primary_key=True)
-    nombre_cuenta = models.CharField(max_length=30)
+    nombre_cuenta = models.CharField(max_length=50)
     def __str__(self):
         return self.nombre_cuenta
 
 class Codunidad(models.Model):
     id_codigo = models.AutoField(primary_key=True)
-    nombre_codigo = models.CharField(max_length=30)
+    nombre_codigo = models.CharField(max_length=50)
     ctapresu = models.ForeignKey(Ctapresu, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -37,10 +37,10 @@ class UsuarioManager(BaseUserManager):
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
     id_usuario = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=30, unique=True)
+    username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=128)  # Este campo es manejado por AbstractBaseUser
     rol_usuario = models.CharField(max_length=30)
-    email_usuario = models.CharField(max_length=30)
+    email_usuario = models.CharField(max_length=50)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     groups = models.ManyToManyField(Group, related_name='custom_user_set')
@@ -67,7 +67,7 @@ class Anexo(models.Model):
 
 class Proveedor(models.Model):
     id_proveedor = models.AutoField(primary_key=True)
-    nombre_proveedor = models.CharField(max_length=30)
+    nombre_proveedor = models.CharField(max_length=50)
     tarifa_cel = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     tarifa_slm = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     tarifa_ldi = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -81,7 +81,7 @@ class Llamada(models.Model):
     destino_llamada = models.IntegerField()
     identificador_llamada = models.IntegerField()
     app_llamada = models.CharField(max_length=30)
-    inicio_llamada = models.DateTimeField()
+    inicio_llamada = models.DateField()
     duracion_llamada = models.IntegerField()
     segundos_facturados = models.IntegerField()
     disposicion = models.CharField(max_length=30)
@@ -94,8 +94,8 @@ class Llamada(models.Model):
 
 class Tarificacion(models.Model):
     id_tarificacion = models.AutoField(primary_key=True)
-    fecha_inicio = models.DateTimeField()
-    fecha_termino = models.DateTimeField()
+    fecha_inicio = models.DateField()
+    fecha_termino = models.DateField()
     costo_total = models.DecimalField(max_digits=12, decimal_places=2)
     minutos_totales = models.IntegerField()
     tipo_llamada = models.CharField(max_length=20)

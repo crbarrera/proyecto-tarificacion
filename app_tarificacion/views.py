@@ -1,5 +1,9 @@
+from datetime import timedelta
+from datetime import datetime
+from django.forms import ValidationError
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import Anexo, Codunidad, Ctapresu, Usuario, Proveedor
+from weasyprint import HTML
+from .models import Anexo, Codunidad, Ctapresu, Llamada, Tarificacion, Usuario, Proveedor
 from .forms import AnexoForm, CuentaPresupuestariaForm, LoginForm, UsuarioForm, ProveedorForm, CodigoUnidadForm
 from django.db import IntegrityError, connection, DatabaseError
 from django.contrib.auth import authenticate, login as auth_login
@@ -8,12 +12,23 @@ from django.contrib.auth import login as auth_login, authenticate
 from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Sum, F, Avg, ExpressionWrapper, fields
 import cx_Oracle
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.hashers import make_password
+from django.utils.timezone import make_aware, get_current_timezone
+import pytz
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
+import base64
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Attachment
+import os
+from decimal import Decimal
+
 
 @login_required
 def index(request):
@@ -538,7 +553,6 @@ def listar_responsables_unidad(request):
     return render(request, 'listar_responsables_unidad.html', {'responsables': responsables})
 
 @login_required
-
 def listar_anexos_activos(request):
     query = request.GET.get('query', '')
     django_cursor = connection.cursor()
@@ -566,3 +580,458 @@ def listar_anexos_activos(request):
         })
 
     return render(request, 'listar_anexos_activos.html', {'anexos': anexos})
+
+@login_required
+def calcular_tarificacion(request):
+    mensaje = None
+    if request.method == 'POST':
+        fecha_inicio = request.POST.get('fecha_inicio')
+        fecha_termino = request.POST.get('fecha_termino')
+        anexo_id = request.POST.get('anexo')
+
+        # Convertir las fechas a formato date (sin hora)
+        try:
+            fecha_inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
+            fecha_termino = datetime.strptime(fecha_termino, "%Y-%m-%d").date()
+        except ValueError:
+            mensaje = 'Formato de fecha incorrecto'
+            anexos = Anexo.objects.all()
+            return render(request, 'calcular_tarificacion.html', {'anexos': anexos, 'mensaje': mensaje})
+
+        # Obtener el anexo seleccionado
+        anexo = get_object_or_404(Anexo, id_anexo=anexo_id)
+
+        # Obtener todas las llamadas de este anexo en el rango de fechas
+        llamadas = Llamada.objects.filter(
+            anexo=anexo,
+            inicio_llamada__range=[fecha_inicio, fecha_termino]
+        ).select_related('proveedor')
+
+        # Inicializar variables para sumar el costo y los minutos
+        costo_total = 0
+        minutos_totales = 0
+        tipo_llamada = None  # Inicializar tipo_llamada
+
+        # Procesar cada llamada
+        for llamada in llamadas:
+            # Obtener tarifa según el tipo de llamada
+            if llamada.tipo_llamada == 'CEL':
+                tarifa = llamada.proveedor.tarifa_cel
+            elif llamada.tipo_llamada == 'SLM':
+                tarifa = llamada.proveedor.tarifa_slm
+            elif llamada.tipo_llamada == 'LDI':
+                tarifa = llamada.proveedor.tarifa_ldi
+            else:
+                tarifa = 0
+
+            # Calcular el costo de la llamada y sumar al total
+            costo_llamada = llamada.segundos_facturados * tarifa
+            costo_total += costo_llamada
+
+            # Sumar minutos (convertidos de segundos)
+            minutos_totales += llamada.segundos_facturados / 60
+
+            # Asignar el tipo de llamada, puede ser el último o puedes usar otro criterio
+            tipo_llamada = llamada.tipo_llamada  # Asignamos el tipo de llamada de la última llamada
+
+        # Sumar el cargo fijo al costo total
+        costo_total += anexo.cargo_fijo
+
+        # Solo crear el registro si hay llamadas o si el anexo tiene cargo fijo
+        Tarificacion.objects.create(
+            anexo=anexo,
+            fecha_inicio=fecha_inicio,
+            fecha_termino=fecha_termino,
+            costo_total=costo_total,
+            minutos_totales=int(minutos_totales),  # Convertir a entero
+            tipo_llamada=tipo_llamada if tipo_llamada else 'N/A'  # Asignar un valor por defecto si no hay llamadas
+        )
+
+        mensaje = 'Tarificación calculada correctamente'
+
+    # Renderizar el formulario si el método es GET o después de procesar el POST
+    anexos = Anexo.objects.all()
+    return render(request, 'calcular_tarificacion.html', {'anexos': anexos, 'mensaje': mensaje})
+
+@login_required
+def listar_tarificacion(request):
+    # Crea un cursor de conexión a la base de datos
+    django_cursor = connection.cursor()
+    out_cur = django_cursor.connection.cursor()  # Cursor de salida para el procedimiento almacenado
+
+    # Inicializa una lista para almacenar los resultados
+    tarificaciones = []
+
+    try:
+        # Llama al procedimiento almacenado
+        django_cursor.callproc('listar_tarificaciones', [out_cur])  # Asegúrate de que el nombre del procedimiento esté correcto
+
+        # Itera sobre el cursor de salida
+        for fila in out_cur:
+            # Desempaqueta los valores del cursor de salida
+            id_tarificacion, fecha_inicio, fecha_termino, costo_total, minutos_totales, tipo_llamada, anexo_id = fila
+
+            # Agrega cada tarificación a la lista
+            tarificaciones.append({
+                'id_tarificacion': id_tarificacion,
+                'fecha_inicio': fecha_inicio,
+                'fecha_termino': fecha_termino,
+                'costo_total': costo_total,
+                'minutos_totales': minutos_totales,
+                'tipo_llamada': tipo_llamada,
+                'anexo_id': anexo_id,  # Guarda el ID del anexo
+            })
+    except Exception as e:
+        print("Error al obtener datos: ", e)  # Imprime cualquier error
+
+    # Obtén todos los anexos para la lista desplegable
+    anexos = Anexo.objects.all()
+
+    # Filtra las tarificaciones si se selecciona un anexo
+    anexo_id = request.GET.get('anexo_id')
+    if anexo_id:
+        tarificaciones = [t for t in tarificaciones if t['anexo_id'] == int(anexo_id)]
+
+    # Renderiza la plantilla y pasa los datos de tarificaciones y anexos
+    return render(request, 'listar_tarificacion.html', {'tarificaciones': tarificaciones, 'anexos': anexos})
+
+@login_required
+def listar_tarificacion_por_codunidad(request):
+    django_cursor = connection.cursor()
+    out_cur = django_cursor.connection.cursor()
+
+    tarificaciones = []
+
+    try:
+        django_cursor.callproc('listar_tarificaciones', [out_cur])
+
+        for fila in out_cur:
+            id_tarificacion, fecha_inicio, fecha_termino, costo_total, minutos_totales, tipo_llamada, anexo_id = fila
+            tarificaciones.append({
+                'id_tarificacion': id_tarificacion,
+                'fecha_inicio': fecha_inicio,
+                'fecha_termino': fecha_termino,
+                'costo_total': costo_total,
+                'minutos_totales': minutos_totales,
+                'tipo_llamada': tipo_llamada,
+                'anexo_id': anexo_id,
+            })
+    except Exception as e:
+        print("Error al obtener datos: ", e)
+
+    codunidades = Codunidad.objects.all()
+
+    codunidad_id = request.GET.get('codunidad_id')
+
+    if codunidad_id:
+        try:
+            codunidad_id = int(codunidad_id)
+            tarificaciones = [t for t in tarificaciones if Anexo.objects.get(id_anexo=t['anexo_id']).codunidad_id == codunidad_id]
+        except ValueError:
+            pass
+
+    return render(request, 'listar_tarificacion_por_codigo.html', {'tarificaciones': tarificaciones, 'codunidades': codunidades})
+
+@login_required
+def consultar_tarificacion_anexo(request):
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_termino = request.GET.get('fecha_termino')
+    anexo_id = request.GET.get('anexo')
+
+    anexos = Anexo.objects.all()  # Obtener todos los anexos
+    rol_user = None
+
+    if request.user.is_authenticated:
+        rol_user = request.user.rol_usuario  # Accede al rol del usuario autenticado
+
+    if fecha_inicio and fecha_termino and anexo_id:
+        try:
+            # Convertir las fechas a objetos datetime
+            fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+            fecha_termino_dt = datetime.strptime(fecha_termino, '%Y-%m-%d')
+
+            if fecha_inicio_dt > fecha_termino_dt:
+                raise ValidationError("La fecha de inicio debe ser anterior a la fecha de término.")
+
+            # Imprimir valores para depuración
+            print(f"Fecha Inicio: {fecha_inicio_dt}")
+            print(f"Fecha Término: {fecha_termino_dt}")
+            print(f"Anexo ID: {anexo_id}")
+
+            tarificaciones = Tarificacion.objects.filter(
+                fecha_inicio__gte=fecha_inicio_dt,
+                fecha_termino__lte=fecha_termino_dt,
+                anexo_id=anexo_id
+            ).select_related('anexo')
+
+            # Imprimir la cantidad de registros encontrados
+            print(f"Tarificaciones encontradas: {tarificaciones.count()}")
+
+            context = {
+                'tarificaciones': tarificaciones,
+                'anexos': anexos,  # Pasar los anexos al contexto
+                'rol_user': rol_user  # Pasar el rol del usuario al contexto
+            }
+            return render(request, 'listar_tarificacion_anexo.html', context)
+        except (ValueError, ValidationError) as e:
+            context = {
+                'anexos': anexos,
+                'error': str(e),
+                'rol_user': rol_user  # Pasar el rol del usuario al contexto
+            }
+            return render(request, 'consultar_tarificacion_anexo.html', context)
+    else:
+        context = {
+            'anexos': anexos,  # Pasar los anexos al contexto
+            'rol_user': rol_user  # Pasar el rol del usuario al contexto
+        }
+        return render(request, 'consultar_tarificacion_anexo.html', context)
+
+@login_required   
+def consultar_tarificacion_codigo(request):
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_termino = request.GET.get('fecha_termino')
+    codigo_id = request.GET.get('codigo')
+
+    codigos = Codunidad.objects.all()  # Obtener todos los códigos de unidad
+    rol_user = None
+
+    if request.user.is_authenticated:
+        rol_user = request.user.rol_usuario  # Accede al rol del usuario autenticado
+
+    if fecha_inicio and fecha_termino and codigo_id:
+        try:
+            # Convertir las fechas a objetos datetime
+            fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+            fecha_termino_dt = datetime.strptime(fecha_termino, '%Y-%m-%d')
+
+            if fecha_inicio_dt > fecha_termino_dt:
+                raise ValidationError("La fecha de inicio debe ser anterior a la fecha de término.")
+
+            # Imprimir valores para depuración
+            print(f"Fecha Inicio: {fecha_inicio_dt}")
+            print(f"Fecha Término: {fecha_termino_dt}")
+            print(f"Código ID: {codigo_id}")
+
+            # Ajustar la consulta para incluir el día completo de la fecha de término
+            tarificaciones = Tarificacion.objects.filter(
+                fecha_inicio__gte=fecha_inicio_dt,
+                fecha_termino__lte=fecha_termino_dt + timedelta(days=1),
+                anexo__codunidad_id=codigo_id
+            ).select_related('anexo', 'anexo__codunidad')
+
+            # Imprimir la cantidad de registros encontrados
+            print(f"Tarificaciones encontradas: {tarificaciones.count()}")
+
+            context = {
+                'tarificaciones': tarificaciones,
+                'codigos': codigos,  # Pasar los códigos al contexto
+                'rol_user': rol_user  # Pasar el rol del usuario al contexto
+            }
+            return render(request, 'listar_tarificacion_codigo.html', context)
+        except (ValueError, ValidationError) as e:
+            context = {
+                'codigos': codigos,
+                'error': str(e),
+                'rol_user': rol_user  # Pasar el rol del usuario al contexto
+            }
+            return render(request, 'consultar_tarificacion_codigo.html', context)
+    else:
+        context = {
+            'codigos': codigos,  # Pasar los códigos al contexto
+            'rol_user': rol_user  # Pasar el rol del usuario al contexto
+        }
+        return render(request, 'consultar_tarificacion_codigo.html', context)
+
+@login_required
+def detalle_tarificacion(request, id_tarificacion):
+    tarificacion = get_object_or_404(Tarificacion, id_tarificacion=id_tarificacion)
+    referer = request.META.get('HTTP_REFERER', '/')
+    rol_user = None
+
+    if request.user.is_authenticated:
+        rol_user = request.user.rol_usuario  # Accede al rol del usuario autenticado
+
+    return render(request, 'detalle_tarificacion.html', {
+        'tarificacion': tarificacion,
+        'referer': referer,
+        'rol_user': rol_user  # Pasar el rol del usuario al contexto
+    })
+
+@login_required
+def generar_reporte_pdf(request, id_tarificacion):
+    tarificacion = get_object_or_404(Tarificacion, id_tarificacion=id_tarificacion)
+    
+    # Renderizar la plantilla HTML con los datos de la tarificación
+    html_string = render_to_string('reporte_tarificacion.html', {'tarificacion': tarificacion})
+    
+    # Generar el PDF
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    # Crear la respuesta HTTP con el PDF
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_tarificacion_{id_tarificacion}.pdf"'
+    
+    return response
+
+@login_required
+def enviar_reporte(request, id_tarificacion):
+    tarificacion = get_object_or_404(Tarificacion, id_tarificacion=id_tarificacion)
+    
+    html_string = render_to_string('reporte_tarificacion.html', {'tarificacion': tarificacion})
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    message = Mail(
+        from_email='cr.barrera@duocuc.cl',  # Asegúrate de que esta dirección esté verificada en SendGrid
+        to_emails='cr.barrera@duocuc.cl',  # Lista de destinatarios
+        subject='Reporte de Tarificación',
+        html_content='Adjunto encontrarás el reporte de tarificación solicitado.'
+    )
+
+    encoded_pdf = base64.b64encode(pdf).decode()
+    attachment = Attachment(
+        file_content=encoded_pdf,
+        file_type='application/pdf',
+        file_name=f'reporte_tarificacion_{id_tarificacion}.pdf',
+        disposition='attachment'
+    )
+    message.attachment = attachment
+
+    try:
+        sg = SendGridAPIClient('')  # Pasa la clave API directamente aquí
+        response = sg.send(message)
+        return JsonResponse({'status': 'success', 'message': 'El reporte ha sido enviado por correo electrónico.'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error al enviar el correo: {e}'})
+
+@login_required
+def generar_reportes(request):
+    responsables = Usuario.objects.filter(rol_usuario='Responsable de Unidad')
+    return render(request, 'generar_reportes.html', {'usuarios': responsables})
+
+@login_required
+def reporte_general(request):
+    total_llamadas = Llamada.objects.count()
+    total_segundos = Llamada.objects.aggregate(Sum('duracion_llamada'))['duracion_llamada__sum'] or 0
+    total_minutos = total_segundos / 60  # Convertir a minutos
+    promedio_duracion_segundos = Llamada.objects.aggregate(Avg('duracion_llamada'))['duracion_llamada__avg'] or 0
+    promedio_duracion_minutos = promedio_duracion_segundos / 60  # Convertir a minutos
+
+    llamadas = Llamada.objects.all()
+
+    # Calcular el costo total de las llamadas
+    costo_total = Decimal(0)
+    for llamada in llamadas:
+        proveedor = llamada.proveedor
+        if llamada.tipo_llamada == 'CEL':
+            tarifa = proveedor.tarifa_cel
+        elif llamada.tipo_llamada == 'SLM':
+            tarifa = proveedor.tarifa_slm
+        elif llamada.tipo_llamada == 'LDI':
+            tarifa = proveedor.tarifa_ldi
+        else:
+            tarifa = Decimal(0)  # Manejar el caso donde el tipo de llamada no coincide con ninguna tarifa
+
+        costo_total += (Decimal(llamada.duracion_llamada) / Decimal(60)) * tarifa
+
+    context = {
+        'total_llamadas': total_llamadas,
+        'total_minutos': total_minutos,
+        'promedio_duracion': promedio_duracion_minutos,
+        'costo_total': costo_total,
+        'llamadas': llamadas,
+    }
+
+    if request.GET.get('download') == 'pdf':
+        # Renderizar la plantilla HTML con los datos
+        html_string = render_to_string('reporte_general.html', context)
+        
+        # Generar el PDF
+        html = HTML(string=html_string)
+        pdf = html.write_pdf()
+
+        # Crear la respuesta HTTP con el PDF
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="reporte_general.pdf"'
+        
+        return response
+
+    return render(request, 'reporte_general.html', context)
+
+@login_required
+def enviar_reporte_general(request):
+    total_llamadas = Llamada.objects.count()
+    total_segundos = Llamada.objects.aggregate(Sum('duracion_llamada'))['duracion_llamada__sum'] or 0
+    total_minutos = total_segundos / 60  # Convertir a minutos
+    promedio_duracion_segundos = Llamada.objects.aggregate(Avg('duracion_llamada'))['duracion_llamada__avg'] or 0
+    promedio_duracion_minutos = promedio_duracion_segundos / 60  # Convertir a minutos
+
+    llamadas = Llamada.objects.all()
+
+    context = {
+        'total_llamadas': total_llamadas,
+        'total_minutos': total_minutos,
+        'promedio_duracion': promedio_duracion_minutos,
+        'llamadas': llamadas,
+    }
+
+    # Renderizar la plantilla HTML con los datos
+    html_string = render_to_string('reporte_general.html', context)
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    message = Mail(
+        from_email='cr.barrera@duocuc.cl',  # Asegúrate de que esta dirección esté verificada en SendGrid
+        to_emails= ['cr.barrera@duocuc.cl', 'cristobal.24bn@gmail.com', 'cristobaljr24@gmail.com'],  # Lista de destinatarios
+        subject='Reporte General de Llamadas',
+        html_content='Adjunto encontrarás el reporte general de llamadas solicitado.'
+    )
+
+    encoded_pdf = base64.b64encode(pdf).decode()
+    attachment = Attachment(
+        file_content=encoded_pdf,
+        file_type='application/pdf',
+        file_name='reporte_general.pdf',
+        disposition='attachment'
+    )
+    message.attachment = attachment
+
+    try:
+        sg = SendGridAPIClient('')  # Pasa la clave API directamente aquí
+        response = sg.send(message)
+        return JsonResponse({'status': 'success', 'message': 'El reporte ha sido enviado por correo electrónico.'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error al enviar el correo: {e}'})
+
+@login_required 
+def generar_reporte_responsable_pdf(request, username):
+    usuario = get_object_or_404(Usuario, username=username)
+    anexos = Anexo.objects.filter(usuario=usuario)
+    tarificaciones = Tarificacion.objects.filter(anexo__in=anexos)
+
+    # Renderizar la plantilla HTML con los datos de las tarificaciones
+    html_string = render_to_string('reporte_responsable_unidad.html', {'usuario': usuario, 'tarificaciones': tarificaciones})
+    
+    # Generar el PDF
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    # Crear la respuesta HTTP con el PDF
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="reporte_responsable_{username}.pdf"'
+    
+    return response
+  
+@login_required
+def consultar_trafico_por_proveedor(request):
+    trafico_por_proveedor = Llamada.objects.values('proveedor__nombre_proveedor').annotate(
+        total_duracion=Sum('duracion_llamada'),
+        total_minutos_facturados=Sum(ExpressionWrapper(F('segundos_facturados') / 60, output_field=fields.FloatField()))
+    ).order_by('proveedor__nombre_proveedor')
+
+    context = {
+        'trafico_por_proveedor': trafico_por_proveedor
+    }
+    return render(request, 'consultar_trafico_por_proveedor.html', context)

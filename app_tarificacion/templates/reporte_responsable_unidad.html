@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Tarificación por Responsable de Unidad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 4px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte de Tarificación para {{ usuario.username }}</h1>
+    <table>
+        <tr>
+            <th>ID Tarificación</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Término</th>
+            <th>Costo Total</th>
+            <th>Minutos Totales</th>
+            <th>Tipo Llamada</th>
+        </tr>
+        {% for tarificacion in tarificaciones %}
+        <tr>
+            <td>{{ tarificacion.id_tarificacion }}</td>
+            <td>{{ tarificacion.fecha_inicio|date:"d/m/Y" }}</td>
+            <td>{{ tarificacion.fecha_termino|date:"d/m/Y" }}</td>
+            <td>{{ tarificacion.costo_total|floatformat:2 }}</td>
+            <td>{{ tarificacion.minutos_totales }}</td>
+            <td>{{ tarificacion.tipo_llamada }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

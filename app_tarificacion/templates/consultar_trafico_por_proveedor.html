@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+<title>Tráfico de Llamadas por Proveedor</title>
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/listar_responsables_unidad.css' %}">
+{% endblock css %}
+{% block header %}
+<!-- Header -->
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+    <div class="welcome">
+        <span>Bienvenido</span>
+        <span class="admin">Administrador</span>
+    </div>
+</header>
+{% endblock header %}
+{% block content %}
+<!-- Breadcrumb Bar -->
+<div class="breadcrumb-bar">
+    <div class="breadcrumb-content">
+        <a href="/">< Inicio</a>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-12 main-content">
+            <div class="table-container">
+                <div class="top-bar">
+                    <h3>Tráfico de Llamadas por Proveedor</h3>
+                    
+                </div>
+                <div class="table-container d-flex">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Proveedor</th>
+                                    <th>Duración Total (segundos)</th>
+                                    <th>Minutos Facturados</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trafico-results">
+                                {% for trafico in trafico_por_proveedor %}
+                                <tr>
+                                    <td>{{ trafico.proveedor__nombre_proveedor }}</td>
+                                    <td>{{ trafico.total_duracion }}</td>
+                                    <td>{{ trafico.total_minutos_facturados|floatformat:2 }}</td>
+                                    <td><button class="btn btn-warning" onclick="mostrarDetalles('{{ trafico.proveedor__nombre_proveedor }}', '{{ trafico.total_duracion }}', '{{ trafico.total_minutos_facturados|floatformat:2 }}')">Seleccionar</button></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">No hay datos disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="side-text col-4">
+                        <h3>Detalle del proveedor:</h3>
+                        <div id="detalles-proveedor">
+                            <p>Selecciona un proveedor para ver los detalles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock content %}
+{% block js %}
+<script>
+    function mostrarDetalles(proveedor, total_duracion, total_minutos_facturados) {
+        const detallesDiv = document.getElementById('detalles-proveedor');
+        detallesDiv.innerHTML = `
+            <p><strong>Proveedor:</strong> ${proveedor}</p>
+            <p><strong>Duración Total (segundos):</strong> ${total_duracion}</p>
+            <p><strong>Minutos Facturados:</strong> ${total_minutos_facturados}</p>
+        `;
+    }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock js %}

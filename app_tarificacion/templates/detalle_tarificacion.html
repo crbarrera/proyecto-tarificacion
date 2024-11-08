@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+<title>Detalles de la Tarificación</title>
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/listar_tarificacion.css' %}">
+{% endblock css %}
+{% block header %}
+<!-- Header -->
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+    <div class="welcome">
+      <span>Bienvenido</span>
+      {% if rol_user %}
+      <p style="color: red;">{{ rol_user }}</p>
+      {% else %}
+      <p>No has iniciado sesión.</p>
+      {% endif %}
+  </div>
+</header>
+
+<!-- Breadcrumb Bar -->
+<div class="breadcrumb-bar">
+    <div class="breadcrumb-content">
+        <a href="{{ referer }}">< Volver</a>
+    </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+      <!-- Main Content -->
+      <main role="main" class="col-12 main-content">
+          <div class="table-container">
+              <div class="top-bar">
+                  <h3>DETALLES DE LA TARIFICACIÓN</h3>
+              </div>
+              <div class="details-content">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                        <td>Id. Tarificación</td>
+                        <td>{{ tarificacion.id_tarificacion }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fecha Inicio</td>
+                        <td>{{ tarificacion.fecha_inicio|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Fecha Término</td>
+                        <td>{{ tarificacion.fecha_termino|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Costo Total</td>
+                        <td>{{ tarificacion.costo_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Minutos Totales</td>
+                        <td>{{ tarificacion.minutos_totales }}</td>
+                    </tr>
+                    <tr>
+                        <td>Código de Unidad</td>
+                        <td>{{ tarificacion.anexo.codunidad.nombre_codigo }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <!-- Botones centrados -->
+                <div class="text-center mt-4">
+                    <a href="{% url 'generar_reporte_pdf' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte</a>
+                    <button onclick="enviarReporte({{ tarificacion.id_tarificacion }})" class="btn btn-secondary">Enviar Reporte al Correo</button>
+                </div>
+                <div id="message-container" class="text-center mt-4"></div>
+              </div>
+          </div>
+      </main>
+  </div>
+</div>
+
+{% endblock header %}
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    function enviarReporte(idTarificacion) {
+        fetch(`/enviar_reporte/${idTarificacion}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const messageContainer = document.getElementById('message-container');
+            if (data.status === 'success') {
+                messageContainer.innerHTML = `<p style="color: green;">${data.message}</p>`;
+            } else {
+                messageContainer.innerHTML = `<p style="color: red;">${data.message}</p>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+{% endblock js %}

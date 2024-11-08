@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte General de Llamadas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px; /* Reducir el tamaño de la fuente */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px; /* Reducir el tamaño de la fuente en la tabla */
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 4px; /* Reducir el padding */
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reporte General de Llamadas</h1>
+    <table>
+        <tr>
+            <th>Descripción</th>
+            <th>Valor</th>
+        </tr>
+        <tr>
+            <td>Total de Llamadas</td>
+            <td>{{ total_llamadas }}</td>
+        </tr>
+        <tr>
+            <td>Total de Minutos</td>
+            <td>{{ total_minutos }}</td>
+        </tr>
+        <tr>
+            <td>Promedio de Duración de Llamadas</td>
+            <td>{{ promedio_duracion }}</td>
+        </tr>
+        <tr>
+            <td>Costo Total de Llamadas</td>
+            <td>${{ costo_total|floatformat:2 }}</td>
+
+        </tr>
+    </table>
+
+    <h2>Detalle de Llamadas</h2>
+    <table>
+        <tr>
+            <th>Origen Llamada</th>
+            <th>Destino Llamada</th>
+            <th>Identificador Llamada</th>
+            <th>App Llamada</th>
+            <th>Inicio Llamada</th>
+            <th>Duración Llamada (segundos)</th>
+            <th>Segundos Facturados</th>
+            <th>Disposición</th>
+            <th>Tipo Llamada</th>
+        </tr>
+        {% for llamada in llamadas %}
+        <tr>
+            <td>{{ llamada.origen_llamada }}</td>
+            <td>{{ llamada.destino_llamada }}</td>
+            <td>{{ llamada.identificador_llamada }}</td>
+            <td>{{ llamada.app_llamada }}</td>
+            <td>{{ llamada.inicio_llamada|date:"d/m/Y" }}</td>
+            <td>{{ llamada.duracion_llamada }}</td>
+            <td>{{ llamada.segundos_facturados }}</td>
+            <td>{{ llamada.disposicion }}</td>
+            <td>{{ llamada.tipo_llamada }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
