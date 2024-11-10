@@ -74,7 +74,7 @@
                 <!-- Botones centrados -->
                 <div class="text-center mt-4">
                     <a href="{% url 'generar_reporte_pdf' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte PDF</a>
-                    <a href="{% url 'generar_reporte_xls' tarificacion.id_tarificacion %}" class="btn btn-secondary mr-2">Descargar Reporte XLS</a>
+                    <a href="{% url 'generar_reporte_xls' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte XLS</a>
                     <button onclick="enviarReporte({{ tarificacion.id_tarificacion }})" class="btn btn-secondary">Enviar Reporte al Correo</button>
                 </div>
                 <div id="message-container" class="text-center mt-4"></div>
