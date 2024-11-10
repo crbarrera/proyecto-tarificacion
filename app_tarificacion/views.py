@@ -28,6 +28,12 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Attachment
 import os
 from decimal import Decimal
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment, Font, Border, Side
+from io import BytesIO
+from openpyxl.cell.cell import MergedCell
 
 
 @login_required
@@ -874,38 +880,178 @@ def generar_reporte_pdf(request, id_tarificacion):
     response['Content-Disposition'] = f'attachment; filename="reporte_tarificacion_{id_tarificacion}.pdf"'
     
     return response
+  
+def generar_reporte_xls(request, id_tarificacion):
+    tarificacion = get_object_or_404(Tarificacion, id_tarificacion=id_tarificacion)
+    
+    # Crear un libro de trabajo y una hoja
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Tarificación"
+    
+    # Insertar una fila vacía al inicio
+    ws.append(['', ''])
+    
+    # Añadir el título y fusionar celdas
+    title = "Reporte de Tarificación"
+    ws.merge_cells('B2:C2')
+    cell = ws['B2']
+    cell.value = title
+    cell.font = Font(size=14, bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    # Añadir los encabezados con una columna vacía al inicio
+    headers = ['', 'Campo', 'Valor']
+    ws.append(headers)
+    
+    # Añadir los datos de la tarificación con una columna vacía al inicio
+    data = [
+        ['', 'Id. Tarificación', tarificacion.id_tarificacion],
+        ['', 'Fecha Inicio', tarificacion.fecha_inicio.strftime('%d/%m/%Y')],
+        ['', 'Fecha Término', tarificacion.fecha_termino.strftime('%d/%m/%Y')],
+        ['', 'Costo Total', tarificacion.costo_total],
+        ['', 'Minutos Totales', tarificacion.minutos_totales],
+        ['', 'Código de Unidad', tarificacion.anexo.codunidad.nombre_codigo]
+    ]
+    
+    for row in data:
+        ws.append(row)
+    
+    # Ajustar el ancho de las columnas y alinear el contenido
+    for column in ws.columns:
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)  # Obtener la letra de la columna
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+            # Alinear el contenido al centro
+            cell.alignment = Alignment(horizontal='center')
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Añadir bordes a las celdas
+    thin_border = Border(left=Side(style='thin'), 
+                         right=Side(style='thin'), 
+                         top=Side(style='thin'), 
+                         bottom=Side(style='thin'))
+    
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=2, max_col=3):
+        for cell in row:
+            cell.border = thin_border
+    
+    # Crear la respuesta HTTP con el archivo XLS
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="reporte_tarificacion_{id_tarificacion}.xlsx"'
+    
+    # Guardar el libro de trabajo en la respuesta
+    wb.save(response)
+    
+    return response
 
 @login_required
 def enviar_reporte(request, id_tarificacion):
     tarificacion = get_object_or_404(Tarificacion, id_tarificacion=id_tarificacion)
     
+    # Generar el PDF
     html_string = render_to_string('reporte_tarificacion.html', {'tarificacion': tarificacion})
     html = HTML(string=html_string)
     pdf = html.write_pdf()
-
+    
+    # Generar el XLS
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Tarificación"
+    
+    ws.append(['', ''])
+    title = "Reporte de Tarificación"
+    ws.merge_cells('B2:C2')
+    cell = ws['B2']
+    cell.value = title
+    cell.font = Font(size=14, bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    headers = ['', 'Campo', 'Valor']
+    ws.append(headers)
+    
+    data = [
+        ['', 'Id. Tarificación', tarificacion.id_tarificacion],
+        ['', 'Fecha Inicio', tarificacion.fecha_inicio.strftime('%d/%m/%Y')],
+        ['', 'Fecha Término', tarificacion.fecha_termino.strftime('%d/%m/%Y')],
+        ['', 'Costo Total', tarificacion.costo_total],
+        ['', 'Minutos Totales', tarificacion.minutos_totales],
+        ['', 'Código de Unidad', tarificacion.anexo.codunidad.nombre_codigo]
+    ]
+    
+    for row in data:
+        ws.append(row)
+    
+    for column in ws.columns:
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+            cell.alignment = Alignment(horizontal='center')
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    thin_border = Border(left=Side(style='thin'), 
+                         right=Side(style='thin'), 
+                         top=Side(style='thin'), 
+                         bottom=Side(style='thin'))
+    
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=2, max_col=3):
+        for cell in row:
+            cell.border = thin_border
+    
+    xls_io = BytesIO()
+    wb.save(xls_io)
+    xls_io.seek(0)
+    xls_data = xls_io.read()
+    
+    # Codificar los archivos en base64
+    encoded_pdf = base64.b64encode(pdf).decode()
+    encoded_xls = base64.b64encode(xls_data).decode()
+    
+    # Crear el mensaje de correo
     message = Mail(
-        from_email='cr.barrera@duocuc.cl',  # Asegúrate de que esta dirección esté verificada en SendGrid
-        to_emails='cr.barrera@duocuc.cl',  # Lista de destinatarios
+        from_email='cr.barrera@duocuc.cl',
+        to_emails='cr.barrera@duocuc.cl',
         subject='Reporte de Tarificación',
         html_content='Adjunto encontrarás el reporte de tarificación solicitado.'
     )
-
-    encoded_pdf = base64.b64encode(pdf).decode()
-    attachment = Attachment(
+    
+    # Adjuntar el PDF
+    pdf_attachment = Attachment(
         file_content=encoded_pdf,
         file_type='application/pdf',
         file_name=f'reporte_tarificacion_{id_tarificacion}.pdf',
         disposition='attachment'
     )
-    message.attachment = attachment
-
+    message.add_attachment(pdf_attachment)
+    
+    # Adjuntar el XLS
+    xls_attachment = Attachment(
+        file_content=encoded_xls,
+        file_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        file_name=f'reporte_tarificacion_{id_tarificacion}.xlsx',
+        disposition='attachment'
+    )
+    message.add_attachment(xls_attachment)
+    
     try:
-        sg = SendGridAPIClient('')  # Pasa la clave API directamente aquí
+        sg = SendGridAPIClient('')
         response = sg.send(message)
         return JsonResponse({'status': 'success', 'message': 'El reporte ha sido enviado por correo electrónico.'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error al enviar el correo: {e}'})
-
+      
 @login_required
 def generar_reportes(request):
     responsables = Usuario.objects.filter(rol_usuario='Responsable de Unidad')
@@ -959,6 +1105,164 @@ def reporte_general(request):
         return response
 
     return render(request, 'reporte_general.html', context)
+  
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment, Font, Border, Side
+from io import BytesIO
+from django.http import HttpResponse
+from django.db.models import Sum, Avg
+from decimal import Decimal
+from .models import Llamada
+
+def reporte_general_xls(request):
+    try:
+        total_llamadas = Llamada.objects.count()
+        total_segundos = Llamada.objects.aggregate(Sum('duracion_llamada'))['duracion_llamada__sum'] or 0
+        total_minutos = total_segundos / 60  # Convertir a minutos
+        promedio_duracion_segundos = Llamada.objects.aggregate(Avg('duracion_llamada'))['duracion_llamada__avg'] or 0
+        promedio_duracion_minutos = promedio_duracion_segundos / 60  # Convertir a minutos
+
+        llamadas = Llamada.objects.all()
+
+        # Calcular el costo total de las llamadas
+        costo_total = Decimal(0)
+        for llamada in llamadas:
+            proveedor = llamada.proveedor
+            if llamada.tipo_llamada == 'CEL':
+                tarifa = proveedor.tarifa_cel
+            elif llamada.tipo_llamada == 'SLM':
+                tarifa = proveedor.tarifa_slm
+            elif llamada.tipo_llamada == 'LDI':
+                tarifa = proveedor.tarifa_ldi
+            else:
+                tarifa = Decimal(0)  # Manejar el caso donde el tipo de llamada no coincide con ninguna tarifa
+
+            costo_total += (Decimal(llamada.duracion_llamada) / Decimal(60)) * tarifa
+
+        # Generar el XLS
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Reporte General de Llamadas"
+        
+        # Primera tabla: Reporte General de Llamadas
+        ws.append(['', ''])
+        title = "Reporte General de Llamadas"
+        ws.merge_cells('B2:C2')
+        cell = ws['B2']
+        cell.value = title
+        cell.font = Font(size=14, bold=True)
+        cell.alignment = Alignment(horizontal='center')
+        
+        headers = ['', 'Descripción', 'Valor']
+        ws.append(headers)
+        
+        data = [
+            ['', 'Total de Llamadas', total_llamadas],
+            ['', 'Total de Minutos', total_minutos],
+            ['', 'Promedio de Duración de Llamadas', promedio_duracion_minutos],
+            ['', 'Costo Total de Llamadas', costo_total]
+        ]
+        
+        for row in data:
+            ws.append(row)
+        
+        # Añadir una fila vacía para la separación
+        ws.append([''])
+        
+        # Segunda tabla: Detalle de Llamadas
+        ws.append([''])  # Fila divisora en blanco
+        
+        detail_title = "Detalle de Llamadas"
+        ws.merge_cells('B10:J10')
+        cell = ws['B10']
+        cell.value = detail_title
+        cell.font = Font(size=14, bold=True)
+        cell.alignment = Alignment(horizontal='center')
+        
+        detail_headers = ['', 'Origen Llamada', 'Destino Llamada', 'Identificador Llamada', 'App Llamada', 'Inicio Llamada', 'Duración Llamada (segundos)', 'Segundos Facturados', 'Disposición', 'Tipo Llamada']
+        ws.append(detail_headers)
+        
+        for llamada in llamadas:
+            ws.append([
+                '',
+                llamada.origen_llamada,
+                llamada.destino_llamada,
+                llamada.identificador_llamada,
+                llamada.app_llamada,
+                llamada.inicio_llamada.strftime('%d/%m/%Y'),
+                llamada.duracion_llamada,
+                llamada.segundos_facturados,
+                llamada.disposicion,
+                llamada.tipo_llamada
+            ])
+        
+        # Ajustar el ancho de las columnas y alinear el contenido para la primera tabla
+        for column in ws.iter_cols(min_col=2, max_col=3, min_row=2, max_row=7):
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+                cell.alignment = Alignment(horizontal='center')
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Ajustar el ancho de las columnas y alinear el contenido para la segunda tabla
+        for column in ws.iter_cols(min_col=2, max_col=10, min_row=10, max_row=ws.max_row):
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+                cell.alignment = Alignment(horizontal='center')
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        thin_border = Border(left=Side(style='thin'), 
+                             right=Side(style='thin'), 
+                             top=Side(style='thin'), 
+                             bottom=Side(style='thin'))
+        
+        # Aplicar bordes a la primera tabla
+        for row in ws.iter_rows(min_row=2, max_row=7, min_col=2, max_col=3):
+            for cell in row:
+                cell.border = thin_border
+        
+        # Aplicar bordes a la segunda tabla
+        for row in ws.iter_rows(min_row=10, max_row=ws.max_row, min_col=2, max_col=10):
+            for cell in row:
+                cell.border = thin_border
+        
+        # Ajustar automáticamente el ancho de la columna B en función del contenido para evitar desbordamientos
+        column_b_max_length = 0
+        for row in range(2, ws.max_row + 1):
+            cell_value_length = len(str(ws.cell(row=row, column=2).value))
+            if cell_value_length > column_b_max_length:
+                column_b_max_length = cell_value_length
+        
+        ws.column_dimensions['B'].width = column_b_max_length + 2
+        
+        xls_io = BytesIO()
+        wb.save(xls_io)
+        xls_io.seek(0)
+        xls_data = xls_io.read()
+        
+        # Crear la respuesta HTTP con el archivo XLS
+        response = HttpResponse(xls_data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="reporte_general.xlsx"'
+        
+        return response
+
+    except Exception as e:
+        return HttpResponse(f'Error al generar el reporte: {e}', status=500)
+
 
 @login_required
 def enviar_reporte_general(request):
@@ -970,10 +1274,26 @@ def enviar_reporte_general(request):
 
     llamadas = Llamada.objects.all()
 
+    # Calcular el costo total de las llamadas
+    costo_total = Decimal(0)
+    for llamada in llamadas:
+        proveedor = llamada.proveedor
+        if llamada.tipo_llamada == 'CEL':
+            tarifa = proveedor.tarifa_cel
+        elif llamada.tipo_llamada == 'SLM':
+            tarifa = proveedor.tarifa_slm
+        elif llamada.tipo_llamada == 'LDI':
+            tarifa = proveedor.tarifa_ldi
+        else:
+            tarifa = Decimal(0)  # Manejar el caso donde el tipo de llamada no coincide con ninguna tarifa
+
+        costo_total += (Decimal(llamada.duracion_llamada) / Decimal(60)) * tarifa
+
     context = {
         'total_llamadas': total_llamadas,
         'total_minutos': total_minutos,
         'promedio_duracion': promedio_duracion_minutos,
+        'costo_total': costo_total,
         'llamadas': llamadas,
     }
 
@@ -982,24 +1302,152 @@ def enviar_reporte_general(request):
     html = HTML(string=html_string)
     pdf = html.write_pdf()
 
+    # Generar el XLS
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte General de Llamadas"
+    
+    # Primera tabla: Reporte General de Llamadas
+    ws.append(['', ''])
+    title = "Reporte General de Llamadas"
+    ws.merge_cells('B2:C2')
+    cell = ws['B2']
+    cell.value = title
+    cell.font = Font(size=14, bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    headers = ['', 'Descripción', 'Valor']
+    ws.append(headers)
+    
+    data = [
+        ['', 'Total de Llamadas', total_llamadas],
+        ['', 'Total de Minutos', total_minutos],
+        ['', 'Promedio de Duración de Llamadas', promedio_duracion_minutos],
+        ['', 'Costo Total de Llamadas', costo_total]
+    ]
+    
+    for row in data:
+        ws.append(row)
+    
+    # Añadir una fila vacía para la separación
+    ws.append([''])
+    
+    # Segunda tabla: Detalle de Llamadas
+    ws.append([''])  # Fila divisora en blanco
+    
+    detail_title = "Detalle de Llamadas"
+    ws.merge_cells('B10:J10')
+    cell = ws['B10']
+    cell.value = detail_title
+    cell.font = Font(size=14, bold=True)
+    cell.alignment = Alignment(horizontal='center')
+    
+    detail_headers = ['', 'Origen Llamada', 'Destino Llamada', 'Identificador Llamada', 'App Llamada', 'Inicio Llamada', 'Duración Llamada (segundos)', 'Segundos Facturados', 'Disposición', 'Tipo Llamada']
+    ws.append(detail_headers)
+    
+    for llamada in llamadas:
+        ws.append([
+            '',
+            llamada.origen_llamada,
+            llamada.destino_llamada,
+            llamada.identificador_llamada,
+            llamada.app_llamada,
+            llamada.inicio_llamada.strftime('%d/%m/%Y'),
+            llamada.duracion_llamada,
+            llamada.segundos_facturados,
+            llamada.disposicion,
+            llamada.tipo_llamada
+        ])
+    
+    # Ajustar el ancho de las columnas y alinear el contenido para la primera tabla
+    for column in ws.iter_cols(min_col=2, max_col=3, min_row=2, max_row=7):
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+            cell.alignment = Alignment(horizontal='center')
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    # Ajustar el ancho de las columnas y alinear el contenido para la segunda tabla
+    for column in ws.iter_cols(min_col=2, max_col=10, min_row=10, max_row=ws.max_row):
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+              pass
+            cell.alignment = Alignment(horizontal='center')
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    thin_border = Border(left=Side(style='thin'), 
+                         right=Side(style='thin'), 
+                         top=Side(style='thin'), 
+                         bottom=Side(style='thin'))
+    
+    # Aplicar bordes a la primera tabla
+    for row in ws.iter_rows(min_row=2, max_row=7, min_col=2, max_col=3):
+        for cell in row:
+            cell.border = thin_border
+    
+    # Aplicar bordes a la segunda tabla
+    for row in ws.iter_rows(min_row=10, max_row=ws.max_row, min_col=2, max_col=10):
+        for cell in row:
+            cell.border = thin_border
+    
+    # Ajustar automáticamente el ancho de la columna B en función del contenido para evitar desbordamientos
+    column_b_max_length = 0
+    for row in range(2, ws.max_row + 1):
+        cell_value_length = len(str(ws.cell(row=row, column=2).value))
+        if cell_value_length > column_b_max_length:
+            column_b_max_length = cell_value_length
+    
+    ws.column_dimensions['B'].width = column_b_max_length + 2
+    
+    xls_io = BytesIO()
+    wb.save(xls_io)
+    xls_io.seek(0)
+    xls_data = xls_io.read()
+
+    # Codificar los archivos en base64
+    encoded_pdf = base64.b64encode(pdf).decode()
+    encoded_xls = base64.b64encode(xls_data).decode()
+
+    # Crear el mensaje de correo
     message = Mail(
-        from_email='cr.barrera@duocuc.cl',  # Asegúrate de que esta dirección esté verificada en SendGrid
-        to_emails= ['cr.barrera@duocuc.cl', 'cristobal.24bn@gmail.com', 'cristobaljr24@gmail.com'],  # Lista de destinatarios
+        from_email='cr.barrera@duocuc.cl',
+        to_emails=['cr.barrera@duocuc.cl', 'cristobal.24bn@gmail.com', 'cristobaljr24@gmail.com'],
         subject='Reporte General de Llamadas',
         html_content='Adjunto encontrarás el reporte general de llamadas solicitado.'
     )
 
-    encoded_pdf = base64.b64encode(pdf).decode()
-    attachment = Attachment(
+    # Adjuntar el PDF
+    pdf_attachment = Attachment(
         file_content=encoded_pdf,
         file_type='application/pdf',
         file_name='reporte_general.pdf',
         disposition='attachment'
     )
-    message.attachment = attachment
+    message.add_attachment(pdf_attachment)
+
+    # Adjuntar el XLS
+    xls_attachment = Attachment(
+        file_content=encoded_xls,
+        file_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        file_name='reporte_general.xlsx',
+        disposition='attachment'
+    )
+    message.add_attachment(xls_attachment)
 
     try:
-        sg = SendGridAPIClient('')  # Pasa la clave API directamente aquí
+        sg = SendGridAPIClient('')
         response = sg.send(message)
         return JsonResponse({'status': 'success', 'message': 'El reporte ha sido enviado por correo electrónico.'})
     except Exception as e:
@@ -1022,6 +1470,81 @@ def generar_reporte_responsable_pdf(request, username):
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="reporte_responsable_{username}.pdf"'
     
+    return response
+  
+def generar_reporte_responsable_xls(request, username):
+    usuario = get_object_or_404(Usuario, username=username)
+    anexos = Anexo.objects.filter(usuario=usuario)
+    tarificaciones = Tarificacion.objects.filter(anexo__in=anexos)
+
+    # Crear un libro de trabajo y una hoja
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Tarificación"
+
+    # Insertar una fila vacía al inicio
+    ws.append([''])
+
+    # Añadir el título y fusionar celdas
+    title = f"Reporte de Tarificación para {usuario.username}"
+    ws.merge_cells('B2:G2')
+    cell = ws['B2']
+    cell.value = title
+    cell.font = Font(size=14, bold=True)
+    cell.alignment = Alignment(horizontal='center')
+
+    # Añadir bordes al título
+    for row in ws.iter_rows(min_row=2, max_row=2, min_col=2, max_col=7):
+        for cell in row:
+            cell.border = Border(left=Side(style='thin'), 
+                                 right=Side(style='thin'), 
+                                 top=Side(style='thin'), 
+                                 bottom=Side(style='thin'))
+
+    # Añadir los encabezados con una columna vacía al inicio
+    headers = ['', 'ID Tarificación', 'Fecha Inicio', 'Fecha Término', 'Costo Total', 'Minutos Totales', 'Tipo Llamada']
+    ws.append(headers)
+
+    # Añadir los datos de las tarificaciones con una columna vacía al inicio
+    for tarificacion in tarificaciones:
+        row = [
+            '',
+            tarificacion.id_tarificacion,
+            tarificacion.fecha_inicio.strftime('%d/%m/%Y'),
+            tarificacion.fecha_termino.strftime('%d/%m/%Y'),
+            tarificacion.costo_total,
+            tarificacion.minutos_totales,
+            tarificacion.tipo_llamada
+        ]
+        ws.append(row)
+
+    # Ajustar el ancho de las columnas y alinear el contenido
+    for column in ws.columns:
+        max_length = 0
+        column_letter = get_column_letter(column[0].column)
+        for cell in column:
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
+            cell.alignment = Alignment(horizontal='center')
+        ws.column_dimensions[column_letter].width = max_length + 2
+
+    # Añadir bordes a las celdas
+    thin_border = Border(left=Side(style='thin'), 
+                         right=Side(style='thin'), 
+                         top=Side(style='thin'), 
+                         bottom=Side(style='thin'))
+
+    for row in ws.iter_rows(min_row=3, max_row=ws.max_row, min_col=2, max_col=7):
+        for cell in row:
+            cell.border = thin_border
+
+    # Crear la respuesta HTTP con el archivo XLS
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="reporte_responsable_{username}.xlsx"'
+
+    # Guardar el libro de trabajo en la respuesta
+    wb.save(response)
+
     return response
   
 @login_required

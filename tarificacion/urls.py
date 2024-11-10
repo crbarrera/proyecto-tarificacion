@@ -57,4 +57,7 @@ urlpatterns = [
     path('enviar_reporte_general/', views.enviar_reporte_general, name='enviar_reporte_general'),
     path('reporte_responsable/<str:username>/', views.generar_reporte_responsable_pdf, name='reporte_responsable_pdf'),
     path('consultar_trafico_por_proveedor/', views.consultar_trafico_por_proveedor, name='consultar_trafico_por_proveedor'),
+    path('generar_reporte_xls/<int:id_tarificacion>/', views.generar_reporte_xls, name='generar_reporte_xls'),
+    path('reporte_general_xls/', views.reporte_general_xls, name='reporte_general_xls'),
+    path('reporte_responsable_xls/<str:username>/', views.generar_reporte_responsable_xls, name='reporte_responsable_xls'),
 ]
