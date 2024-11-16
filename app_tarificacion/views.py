@@ -1,7 +1,9 @@
 from datetime import timedelta
 from datetime import datetime
+from django.db import models
 from django.forms import ValidationError
 from django.shortcuts import redirect, render, get_object_or_404
+from matplotlib.ticker import MaxNLocator
 from weasyprint import HTML
 from .models import Anexo, Codunidad, Ctapresu, Llamada, Tarificacion, Usuario, Proveedor
 from .forms import AnexoForm, CuentaPresupuestariaForm, LoginForm, UsuarioForm, ProveedorForm, CodigoUnidadForm
@@ -12,7 +14,7 @@ from django.contrib.auth import login as auth_login, authenticate
 from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Sum, F, Avg, ExpressionWrapper, fields
+from django.db.models import Q, Sum, F, Avg, ExpressionWrapper, fields, Case, When, DecimalField
 import cx_Oracle
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
@@ -44,7 +46,8 @@ from django.http import HttpResponse
 from django.db.models import Sum, Avg
 from decimal import Decimal
 from .models import Llamada
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 @login_required
 def index(request):
@@ -601,74 +604,81 @@ def listar_anexos_activos(request):
 def calcular_tarificacion(request):
     mensaje = None
     if request.method == 'POST':
-        fecha_inicio = request.POST.get('fecha_inicio')
-        fecha_termino = request.POST.get('fecha_termino')
         anexo_id = request.POST.get('anexo')
+        mes = request.POST.get('mes')
 
-        # Convertir las fechas a formato date (sin hora)
-        try:
-            fecha_inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d").date()
-            fecha_termino = datetime.strptime(fecha_termino, "%Y-%m-%d").date()
-        except ValueError:
-            mensaje = 'Formato de fecha incorrecto'
+        if not anexo_id or not mes:
+            mensaje = 'Anexo y mes son requeridos'
             anexos = Anexo.objects.all()
             return render(request, 'calcular_tarificacion.html', {'anexos': anexos, 'mensaje': mensaje})
 
-        # Obtener el anexo seleccionado
+        try:
+            fecha_seleccionada = datetime.strptime(mes, "%Y-%m")
+        except ValueError:
+            mensaje = 'Formato de mes incorrecto'
+            anexos = Anexo.objects.all()
+            return render(request, 'calcular_tarificacion.html', {'anexos': anexos, 'mensaje': mensaje})
+
+        fecha_inicio = (fecha_seleccionada.replace(day=1) - timedelta(days=1)).replace(day=28)
+        fecha_termino = fecha_seleccionada.replace(day=27)
+
         anexo = get_object_or_404(Anexo, id_anexo=anexo_id)
 
-        # Obtener todas las llamadas de este anexo en el rango de fechas
-        llamadas = Llamada.objects.filter(
-            anexo=anexo,
-            inicio_llamada__range=[fecha_inicio, fecha_termino]
-        ).select_related('proveedor')
-
-        # Inicializar variables para sumar el costo y los minutos
-        costo_total = 0
-        minutos_totales = 0
-        tipo_llamada = None  # Inicializar tipo_llamada
-
-        # Procesar cada llamada
-        for llamada in llamadas:
-            # Obtener tarifa según el tipo de llamada
-            if llamada.tipo_llamada == 'CEL':
-                tarifa = llamada.proveedor.tarifa_cel
-            elif llamada.tipo_llamada == 'SLM':
-                tarifa = llamada.proveedor.tarifa_slm
-            elif llamada.tipo_llamada == 'LDI':
-                tarifa = llamada.proveedor.tarifa_ldi
-            else:
-                tarifa = 0
-
-            # Calcular el costo de la llamada y sumar al total
-            costo_llamada = llamada.segundos_facturados * tarifa
-            costo_total += costo_llamada
-
-            # Sumar minutos (convertidos de segundos)
-            minutos_totales += llamada.segundos_facturados / 60
-
-            # Asignar el tipo de llamada, puede ser el último o puedes usar otro criterio
-            tipo_llamada = llamada.tipo_llamada  # Asignamos el tipo de llamada de la última llamada
-
-        # Sumar el cargo fijo al costo total
-        costo_total += anexo.cargo_fijo
-
-        # Solo crear el registro si hay llamadas o si el anexo tiene cargo fijo
-        Tarificacion.objects.create(
+        tarificacion_existente = Tarificacion.objects.filter(
             anexo=anexo,
             fecha_inicio=fecha_inicio,
-            fecha_termino=fecha_termino,
-            costo_total=costo_total,
-            minutos_totales=int(minutos_totales),  # Convertir a entero
-            tipo_llamada=tipo_llamada if tipo_llamada else 'N/A'  # Asignar un valor por defecto si no hay llamadas
-        )
+            fecha_termino=fecha_termino
+        ).first()
 
-        mensaje = 'Tarificación calculada correctamente'
+        if tarificacion_existente:
+            mensaje = 'Ya existe una tarificación para este ciclo.'
+        else:
+            llamadas = Llamada.objects.filter(
+                anexo=anexo,
+                inicio_llamada__range=[fecha_inicio, fecha_termino]
+            ).select_related('proveedor')
 
-    # Renderizar el formulario si el método es GET o después de procesar el POST
+            # Añadir mensajes de depuración
+            print(f"Llamadas encontradas: {llamadas.count()}")
+            for llamada in llamadas:
+                print(f"Llamada ID: {llamada.id_llamada}, Fecha: {llamada.inicio_llamada}, Tipo: {llamada.tipo_llamada}")
+
+            llamadas = llamadas.annotate(
+                tarifa=Case(
+                    When(tipo_llamada='CEL', then=F('proveedor__tarifa_cel')),
+                    When(tipo_llamada='SLM', then=F('proveedor__tarifa_slm')),
+                    When(tipo_llamada='LDI', then=F('proveedor__tarifa_ldi')),
+                    default=0,
+                    output_field=DecimalField()
+                ),
+                costo_llamada=F('segundos_facturados') * Case(
+                    When(tipo_llamada='CEL', then=F('proveedor__tarifa_cel')),
+                    When(tipo_llamada='SLM', then=F('proveedor__tarifa_slm')),
+                    When(tipo_llamada='LDI', then=F('proveedor__tarifa_ldi')),
+                    default=0,
+                    output_field=DecimalField()
+                )
+            )
+
+            costo_total = llamadas.aggregate(total=Sum('costo_llamada'))['total'] or 0
+            minutos_totales = llamadas.aggregate(total=Sum(F('segundos_facturados') / 60))['total'] or 0
+
+            costo_total += anexo.cargo_fijo
+
+            Tarificacion.objects.create(
+                anexo=anexo,
+                fecha_inicio=fecha_inicio,
+                fecha_termino=fecha_termino,
+                costo_total=costo_total,
+                minutos_totales=int(minutos_totales),
+                tipo_llamada='N/A' if not llamadas else llamadas[0].tipo_llamada
+            )
+
+            mensaje = 'Tarificación calculada correctamente'
+
     anexos = Anexo.objects.all()
     return render(request, 'calcular_tarificacion.html', {'anexos': anexos, 'mensaje': mensaje})
-
+  
 @login_required
 def listar_tarificacion(request):
     # Crea un cursor de conexión a la base de datos
@@ -1535,3 +1545,83 @@ def consultar_trafico_por_proveedor(request):
         'trafico_por_proveedor': trafico_por_proveedor
     }
     return render(request, 'consultar_trafico_por_proveedor.html', context)
+  
+def generar_graficos(request):
+    # Gráfico de Distribución de Tipos de Llamadas por Código de Unidad
+    codigos_unidad = Codunidad.objects.all()
+    tipos_llamadas = ['SLM', 'CEL', 'LDI']
+    distribucion_llamadas = []
+
+    for codigo in codigos_unidad:
+        anexos = Anexo.objects.filter(codunidad=codigo)
+        slm = Llamada.objects.filter(anexo__in=anexos, tipo_llamada='SLM').count()
+        cel = Llamada.objects.filter(anexo__in=anexos, tipo_llamada='CEL').count()
+        ldi = Llamada.objects.filter(anexo__in=anexos, tipo_llamada='LDI').count()
+        distribucion_llamadas.append([slm, cel, ldi])
+
+    fig1, ax1 = plt.subplots()
+    bar_width = 0.25
+    index1 = np.arange(len(codigos_unidad))
+
+    # Posiciones para cada grupo de barras
+    positions = [index1, index1 + bar_width, index1 + 2 * bar_width]
+
+    # Crear las barras para cada tipo de llamada
+    for i in range(len(tipos_llamadas)):
+        ax1.bar(positions[i], [distribucion[i] for distribucion in distribucion_llamadas], bar_width, label=tipos_llamadas[i])
+
+    ax1.set_xlabel('Códigos de Unidad')
+    ax1.set_ylabel('Cantidad de Llamadas')
+    ax1.set_title('Distribución de Tipos de Llamadas por Código de Unidad')
+    
+    # Acortar la palabra 'Departamento' a 'D.' en los nombres de los códigos de unidad
+    codigos_unidad_acortados = [codigo.nombre_codigo.replace('Departamento', 'D.') for codigo in codigos_unidad]
+    
+    ax1.set_xticks(index1 + bar_width)
+    ax1.set_xticklabels(codigos_unidad_acortados, rotation=45, ha='right')
+    ax1.legend()
+
+    # Ajustar el diseño para que las etiquetas no se corten
+    plt.tight_layout()
+
+    # Asegurarse de que el último dígito del eje Y no sea el valor más alto sino que haya más rango entre uno y otro
+    max_y_value = max(max(distribucion) for distribucion in distribucion_llamadas)
+    ax1.set_ylim(0, max_y_value + (max_y_value * 0.2))  # Añadir un 20% al valor máximo
+
+    # Asegurarse de que las etiquetas del eje Y sean enteros
+    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    buffer1 = BytesIO()
+    plt.savefig(buffer1, format='png')
+    buffer1.seek(0)
+    image_png1 = buffer1.getvalue()
+    buffer1.close()
+    graphic1 = base64.b64encode(image_png1).decode('utf-8')
+
+    # Gráfico de Número de Llamadas por Proveedor
+    proveedores = Proveedor.objects.all()
+    numero_llamadas = [Llamada.objects.filter(proveedor=proveedor).count() for proveedor in proveedores]
+
+    fig2, ax2 = plt.subplots()
+    bar_width = 0.35
+    index2 = np.arange(len(proveedores))
+
+    ax2.bar(index2, numero_llamadas, bar_width, label='Número de Llamadas')
+    ax2.set_xlabel('Proveedores')
+    ax2.set_ylabel('Número de Llamadas')
+    ax2.set_title('Número de Llamadas por Proveedor')
+    ax2.set_xticks(index2)
+    ax2.set_xticklabels([proveedor.nombre_proveedor for proveedor in proveedores])
+    ax2.legend()
+
+    # Asegurarse de que las etiquetas del eje y sean enteros sin repetir valores
+    ax2.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    buffer2 = BytesIO()
+    plt.savefig(buffer2, format='png')
+    buffer2.seek(0)
+    image_png2 = buffer2.getvalue()
+    buffer2.close()
+    graphic2 = base64.b64encode(image_png2).decode('utf-8')
+
+    return render(request, 'graficos.html', {'graphic1': graphic1, 'graphic2': graphic2})

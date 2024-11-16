@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+<title>Estadísticas de Tarifas Telefónicas</title>
+{% endblock title %}
+{% block css %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/listar_cuentas_presupuestarias.css' %}">
+<style>
+  .table-container .top-bar h3 {
+    margin: 0;
+    color: #000000; /* Black */
+    font-weight: bold;
+    text-align: center; /* Centrar el título */
+    width: 100%; /* Asegurar que ocupe todo el ancho */
+  }
+  .grafico-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .grafico {
+    margin: 0 10px; /* Espacio entre los gráficos */
+    text-align: center; /* Centrar el contenido dentro de cada gráfico */
+  }
+</style>
+{% endblock css %}
+{% block header %}
+<!-- Header -->
+<header class="header">
+    <h2>Tarificación Telefónica</h2>
+    <div class="welcome">
+        <span>Bienvenido</span>
+        <span class="admin">Administrador</span>
+    </div>
+</header>
+{% endblock header %}
+{% block content %}
+<!-- Breadcrumb Bar -->
+<div class="breadcrumb-bar">
+    <div class="breadcrumb-content">
+        <a href="/">< Inicio</a>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-12 main-content">
+          <div class="table-container">
+              <div class="top-bar">
+                  <h3>GRÁFICOS</h3>
+              </div>
+              <div class="grafico-container">
+                  <div class="grafico">
+                      <h4>Distribución de Tipos de Llamadas por Código de Unidad</h4>
+                      <img src="data:image/png;base64,{{ graphic1 }}" alt="Distribución de Tipos de Llamadas por Código de Unidad">
+                  </div>
+                  <div class="grafico">
+                      <h4>Número de Llamadas por Proveedor</h4>
+                      <img src="data:image/png;base64,{{ graphic2 }}" alt="Gráfico de Número de Llamadas">
+                  </div>
+              </div>
+          </div>
+      </main>
+    </div>
+</div>
+
+{% endblock content %}
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+{% endblock js %}

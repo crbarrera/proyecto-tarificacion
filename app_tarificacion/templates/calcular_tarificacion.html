@@ -184,16 +184,13 @@
                         <div class="container mt-5">
                             <div class="form-column col-md-12">
                                 <div class="form-group">
-                                    <label for="fecha_inicio">Fecha de Inicio:</label>
-                                    <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="fecha_termino">Fecha de Fin:</label>
-                                    <input type="date" id="fecha_termino" name="fecha_termino" class="form-control" required>
+                                    <label for="mes">Seleccione el Mes:</label>
+                                    <input type="month" id="mes" name="mes" class="form-control" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="anexo">Número de Anexo:</label>
                                     <select id="anexo" name="anexo" class="form-control" required>
+                                      <option value="" disabled selected>Seleccionar anexo</option>
                                         {% for anexo in anexos %}
                                             <option value="{{ anexo.id_anexo }}">{{ anexo.numero_anexo }}</option>
                                         {% endfor %}
