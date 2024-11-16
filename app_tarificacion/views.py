@@ -34,6 +34,16 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Font, Border, Side
 from io import BytesIO
 from openpyxl.cell.cell import MergedCell
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment, Font, Border, Side
+from io import BytesIO
+from django.http import HttpResponse
+from django.db.models import Sum, Avg
+from decimal import Decimal
+from .models import Llamada
 
 
 @login_required
@@ -1015,42 +1025,31 @@ def enviar_reporte(request, id_tarificacion):
     xls_io.seek(0)
     xls_data = xls_io.read()
     
-    # Codificar los archivos en base64
-    encoded_pdf = base64.b64encode(pdf).decode()
-    encoded_xls = base64.b64encode(xls_data).decode()
+    print("Tamaño del PDF:", len(pdf))
+    print("Tamaño del XLS:", len(xls_data))
     
     # Crear el mensaje de correo
-    message = Mail(
-        from_email='cr.barrera@duocuc.cl',
-        to_emails='cr.barrera@duocuc.cl',
-        subject='Reporte de Tarificación',
-        html_content='Adjunto encontrarás el reporte de tarificación solicitado.'
-    )
+    subject = 'Reporte de Tarificación'
+    body = 'Adjunto encontrarás el reporte de tarificación solicitado.'
+    from_email = 'sistematarificacion@gmail.com'  # Debes configurar EMAIL_HOST_USER en tu settings.py
+    to_email = 'sistematarificacion@gmail.com'  # Cambia esto al correo electrónico al que quieres enviar los datos de la agenda
+    
+    email = EmailMessage(subject, body, from_email, [to_email])
     
     # Adjuntar el PDF
-    pdf_attachment = Attachment(
-        file_content=encoded_pdf,
-        file_type='application/pdf',
-        file_name=f'reporte_tarificacion_{id_tarificacion}.pdf',
-        disposition='attachment'
-    )
-    message.add_attachment(pdf_attachment)
+    email.attach(f'reporte_tarificacion_{id_tarificacion}.pdf', pdf, 'application/pdf')
     
     # Adjuntar el XLS
-    xls_attachment = Attachment(
-        file_content=encoded_xls,
-        file_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        file_name=f'reporte_tarificacion_{id_tarificacion}.xlsx',
-        disposition='attachment'
-    )
-    message.add_attachment(xls_attachment)
+    email.attach(f'reporte_tarificacion_{id_tarificacion}.xlsx', xls_data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     
+    # Enviar el correo
     try:
-        sg = SendGridAPIClient('')
-        response = sg.send(message)
+        email.send()
         return JsonResponse({'status': 'success', 'message': 'El reporte ha sido enviado por correo electrónico.'})
     except Exception as e:
+        print("Error al enviar el correo:", e)
         return JsonResponse({'status': 'error', 'message': f'Error al enviar el correo: {e}'})
+
       
 @login_required
 def generar_reportes(request):
@@ -1105,15 +1104,6 @@ def reporte_general(request):
         return response
 
     return render(request, 'reporte_general.html', context)
-  
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment, Font, Border, Side
-from io import BytesIO
-from django.http import HttpResponse
-from django.db.models import Sum, Avg
-from decimal import Decimal
-from .models import Llamada
 
 def reporte_general_xls(request):
     try:
@@ -1416,42 +1406,29 @@ def enviar_reporte_general(request):
     xls_io.seek(0)
     xls_data = xls_io.read()
 
-    # Codificar los archivos en base64
-    encoded_pdf = base64.b64encode(pdf).decode()
-    encoded_xls = base64.b64encode(xls_data).decode()
-
     # Crear el mensaje de correo
-    message = Mail(
-        from_email='cr.barrera@duocuc.cl',
-        to_emails=['cr.barrera@duocuc.cl', 'cristobal.24bn@gmail.com', 'cristobaljr24@gmail.com'],
-        subject='Reporte General de Llamadas',
-        html_content='Adjunto encontrarás el reporte general de llamadas solicitado.'
-    )
+    subject = 'Reporte General de Llamadas'
+    body = 'Adjunto encontrarás el reporte general de llamadas solicitado.'
+    from_email = 'sistematarificacion@gmail.com'  # Debes configurar EMAIL_HOST_USER en tu settings.py
+    to_emails = ['sistematarificacion@gmail.com', 'sistematarificacion@gmail.com', 'sistematarificacion@gmail.com']  # Lista de destinatarios
 
+    email = EmailMessage(subject, body, from_email, to_emails)
+    
     # Adjuntar el PDF
-    pdf_attachment = Attachment(
-        file_content=encoded_pdf,
-        file_type='application/pdf',
-        file_name='reporte_general.pdf',
-        disposition='attachment'
-    )
-    message.add_attachment(pdf_attachment)
-
+    email.attach('reporte_general.pdf', pdf, 'application/pdf')
+    
     # Adjuntar el XLS
-    xls_attachment = Attachment(
-        file_content=encoded_xls,
-        file_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        file_name='reporte_general.xlsx',
-        disposition='attachment'
-    )
-    message.add_attachment(xls_attachment)
-
+    email.attach('reporte_general.xlsx', xls_data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    
+    # Enviar el correo
     try:
-        sg = SendGridAPIClient('')
-        response = sg.send(message)
+        email.send()
         return JsonResponse({'status': 'success', 'message': 'El reporte ha sido enviado por correo electrónico.'})
     except Exception as e:
+        print("Error al enviar el correo:", e)
         return JsonResponse({'status': 'error', 'message': f'Error al enviar el correo: {e}'})
+
+
 
 @login_required 
 def generar_reporte_responsable_pdf(request, username):

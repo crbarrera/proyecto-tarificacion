@@ -145,11 +145,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Configuración de correo
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_HOST = 'smtp.sendgrid.net'
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+#EMAIL_HOST_USER = 'apikey'  # Esto es literal, no tu nombre de usuario
+#EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')  # Obtén la clave API de las variables de entorno
+#DEFAULT_FROM_EMAIL = 'cr.barrera@duocuc.cl'
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'apikey'  # Esto es literal, no tu nombre de usuario
-EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')  # Obtén la clave API de las variables de entorno
-DEFAULT_FROM_EMAIL = 'cr.barrera@duocuc.cl'
+EMAIL_HOST = 'smtp.gmail.com'  # El servidor SMTP que utilizarás para enviar correos electrónicos
+EMAIL_PORT = 587  # El puerto del servidor SMTP (puede variar dependiendo del proveedor)
+EMAIL_USE_TLS = True  # Indica si se debe usar TLS (Transport Layer Security) para la conexión SMTP
+EMAIL_HOST_USER = 'sistematarificacion@gmail.com'  # Tu dirección de correo electrónico desde la que enviarás los correos electrónicos
+EMAIL_HOST_PASSWORD = 'zwhm tkkm uums jwso'  # La contraseña de tu cuenta de correo electrónico
+
+
+
 
