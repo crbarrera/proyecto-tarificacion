@@ -6,22 +6,9 @@
 {% block css %}
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{% static 'css/listar_tarificacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 {% endblock css %}
-{% block header %}
-<!-- Header -->
-<header class="header">
-    <h2>Tarificación Telefónica</h2>
-    <div class="welcome">
-      <span>Bienvenido</span>
-      {% if rol_user %}
-      <p style="color: red;">{{ rol_user }}</p>
-      {% else %}
-      <p>No has iniciado sesión.</p>
-      {% endif %}
-  </div>
-</header>
-
-<!-- Breadcrumb Bar -->
+{% block content %}
 <div class="breadcrumb-bar">
     <div class="breadcrumb-content">
         <a href="{{ referer }}">< Volver</a>
@@ -73,9 +60,9 @@
                 </table>
                 <!-- Botones centrados -->
                 <div class="text-center mt-4">
-                    <a href="{% url 'generar_reporte_pdf' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte PDF</a>
-                    <a href="{% url 'generar_reporte_xls' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte XLS</a>
-                    <button onclick="enviarReporte({{ tarificacion.id_tarificacion }})" class="btn btn-secondary">Enviar Reporte al Correo</button>
+                    <a style="width: 200px" href="{% url 'generar_reporte_pdf' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte PDF</a>
+                    <a style="width: 200px" href="{% url 'generar_reporte_xls' tarificacion.id_tarificacion %}" class="btn btn-primary mr-2">Descargar Reporte XLS</a>
+                    <button style="width: 200px" onclick="enviarReporte({{ tarificacion.id_tarificacion }})" class="btn btn-secondary">Enviar Reporte al Correo</button>
                 </div>
                 <div id="message-container" class="text-center mt-4"></div>
               </div>
@@ -83,12 +70,6 @@
       </main>
   </div>
 </div>
-
-{% endblock header %}
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
     function enviarReporte(idTarificacion) {
         fetch(`/enviar_reporte/${idTarificacion}/`, {
@@ -112,4 +93,4 @@
         });
     }
 </script>
-{% endblock js %}
+{% endblock content %}

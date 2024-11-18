@@ -6,36 +6,75 @@
 {% block css %}
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{% static 'css/listar_cuentas_presupuestarias.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 <style>
   .table-container .top-bar h3 {
     margin: 0;
-    color: #000000; /* Black */
+    color: #000000; /* Negro */
     font-weight: bold;
     text-align: center; /* Centrar el título */
     width: 100%; /* Asegurar que ocupe todo el ancho */
   }
+
   .grafico-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap; /* Permitir que los gráficos se envuelvan en dispositivos pequeños */
   }
+
   .grafico {
-    margin: 0 10px; /* Espacio entre los gráficos */
-    text-align: center; /* Centrar el contenido dentro de cada gráfico */
+      margin: 10px;
+      text-align: center;
+      flex: 1 1 calc(50% - 20px); /* Dos gráficos por fila en pantallas grandes */
+      max-width: calc(50% - 20px); /* Limitar el ancho máximo al 50% menos márgenes */
   }
+
+  .grafico img {
+      width: 80%;
+      height: auto;
+  }
+
+  @media (max-width: 768px) {
+      .grafico-container {
+          flex-direction: column; /* Colocar los gráficos uno debajo del otro */
+          overflow-y: auto; /* Permitir el deslizamiento vertical */
+          max-height: 10vh; /* Limitar la altura del contenedor para permitir el scroll */
+      }
+      .grafico {
+          flex: 1 1 100%;
+          max-width: 100%; /* Asegurar que el gráfico ocupe el ancho completo */
+          margin: 10px 0; /* Espacio vertical entre los gráficos */
+      }
+      .grafico img {
+          width: 100%;
+          height: auto; /* Mantener la proporción de la imagen */
+      }
+  }
+
+  @media (max-width: 768px) {
+    .grafico-container {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap !important;
+      overflow-y: auto !important;/* Permite scroll vertical */
+      max-height: 100vh !important; /* Asegura que el contenedor no exceda la altura de la ventana */
+    }
+  
+    .grafico-container > * {
+      flex-shrink: 0; /* Evita que los elementos hijos se encojan */
+    }
+
+    .table-container {
+      overflow-y: auto; /* Permite scroll en el contenedor padre si es necesario */
+    }
+  }
+
 </style>
 {% endblock css %}
-{% block header %}
-<!-- Header -->
-<header class="header">
-    <h2>Tarificación Telefónica</h2>
-    <div class="welcome">
-        <span>Bienvenido</span>
-        <span class="admin">Administrador</span>
-    </div>
-</header>
-{% endblock header %}
+
 {% block content %}
 <!-- Breadcrumb Bar -->
 <div class="breadcrumb-bar">
@@ -68,8 +107,3 @@
 </div>
 
 {% endblock content %}
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-{% endblock js %}

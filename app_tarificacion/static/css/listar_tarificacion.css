@@ -16,7 +16,6 @@ html, body {
   padding: 20px; /* Ensure padding matches breadcrumb */
 }
 .header {
-  height: 56px; /* Adjust as needed */
   background-color: #cdd0d3; /* Gradient from dark to light grey */
   border-bottom: 1px solid #ddd;
   display: flex;
@@ -136,4 +135,14 @@ html, body {
 .btn {
   white-space: nowrap; /* Prevent text wrapping */
   border: 1px solid black; /* Black border for buttons */
+}
+
+@media (max-width: 768px) {
+  .container-fluid{
+    overflow: auto;
+  }
+
+  .text-center mt-4{
+    overflow: auto;
+  }
 }

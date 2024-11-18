@@ -137,3 +137,181 @@ html, body {
     word-wrap: break-word; /* Permite que las palabras largas se dividan y ajusten */
     word-break: break-all; /* Fuerza un salto de línea en palabras largas */
 }
+
+.nav-link {
+    color: black !important;
+}
+
+.nav-item {
+    border-bottom: 1px solid #000000;
+    padding: 4px 0;
+}
+.header {
+    height: 75px; /* Adjust as needed */
+    background-color: #cdd0d3; /* Light grey */
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.header h2 {
+    font-weight: bold;
+    color: black;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.header .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    right: 20px;
+    text-align: right;
+    font-weight: bold;
+}
+.header .cerrar-sesion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Cambia align-items a flex-start */
+    position: absolute;
+    left: 20px; /* Cambia right a left */
+    text-align: left;
+    font-weight: bold;
+}
+
+.header .admin {
+    color: red;
+}
+.center-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.center-box div {
+    border: 1px solid #000000;
+    padding: 20px;
+    text-align: center;
+    width: 50%; /* Adjust as needed */
+    height: 50%; /* Adjust as needed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0e3e5; /* Even lighter grey */
+}
+.center-box h1 {
+    font-weight: bold;
+    color: black;
+}
+.btn-primary {
+  width: 100%;
+  background-color: #333333; /* Dark grey */
+  border-color: #333333; /* Dark grey */
+}
+.btn-primary:hover {
+    background-color: #555555; /* Slightly lighter grey */
+    border-color: #555555; /* Slightly lighter grey */
+}
+.button {
+    background-color: #4CAF50; /* Verde */
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alineación a la izquierda */
+    margin-left: 20px; /* Asegura que los botones estén alineados a la izquierda de la página */
+}
+/* Estilos para el menú de hamburguesa */
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.cerrar-sesion {
+    margin-top: 10px;
+}
+
+.header {
+    background-color: #cdd0d3;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.header h2 {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.nav-item .nav-link {
+    color: black;
+}
+
+.navbar-collapse {
+    overflow-y: auto;
+    max-height: calc(100vh - 56px); /* Ajusta el valor según la altura del header */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+.nav-link {
+    color: black !important;
+}
+
+.header h2 {
+    font-size: 1.5rem; /* Ajusta el tamaño del texto del título */
+    margin: 0;
+    white-space: nowrap; /* Asegura que el texto no se quiebre en líneas nuevas */
+    overflow: hidden; /* Oculta cualquier desbordamiento del texto */
+    text-overflow: ellipsis; /* Añade puntos suspensivos si el texto es muy largo */
+}
+
+@media (max-width: 768px) {
+    container-fluid copia{
+        visibility: unhidden;
+    }
+
+    container-fluid{
+        visibility: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .side-text {
+      visibility: hidden;
+      display: none;
+    }
+    .titulo{
+        text-align: center;
+    }
+    .top-bar{
+        flex-direction: column;
+    }
+    form{
+        visibility: hidden;
+    }
+}

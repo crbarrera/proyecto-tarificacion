@@ -4,17 +4,9 @@
 {% block css %}
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{% static 'css/listar_usuarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 {% endblock css %}
-{% block header %}
-<!-- Header -->
-<header class="header">
-    <h2>Tarificación Telefónica</h2>
-    <div class="welcome">
-        <span>Bienvenido</span>
-        <span class="admin">Administrador</span>
-    </div>
-</header>
-{% endblock header %}
+
 {% block content %}
 <!-- Breadcrumb Bar -->
 <div class="breadcrumb-bar">
@@ -29,8 +21,8 @@
         <main role="main" class="col-12 main-content">
             <div class="table-container">
                 <div class="top-bar">
-                    <button class="btn btn-primary" onclick="window.location.href='{% url 'crear_usuario' %}'">Agregar Usuario</button>
-                    <h3>MANTENER DATOS USUARIOS</h3>
+                    <button style="width: 200px" class="btn btn-primary" onclick="window.location.href='{% url 'crear_usuario' %}'">Agregar Usuario</button>
+                    <h3 >MANTENER DATOS USUARIOS</h3>
                     <form id="search-form" hx-get="{% url 'usuarios' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results">
                       <input type="text" name="query" class="form-control" placeholder="Buscar...">
                     </form>
@@ -97,12 +89,6 @@
       </div>
     </div>
   </div>
-</div>
-{% endblock content %}
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
   function confirmarEliminacion(idUsuario, nombreUsuario) {
     document.getElementById('nombreUsuario').textContent = nombreUsuario;
@@ -111,4 +97,6 @@
     $('#confirmarEliminacionModal').modal('show');
   }
 </script>
-{% endblock js %}
+</div>
+{% endblock content %}
+

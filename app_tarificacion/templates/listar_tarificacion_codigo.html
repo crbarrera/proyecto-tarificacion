@@ -6,21 +6,9 @@
 {% block css %}
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{% static 'css/listar_tarificacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 {% endblock css %}
-{% block header %}
-<!-- Header -->
-<header class="header">
-    <h2>Tarificación Telefónica</h2>
-    <div class="welcome">
-      <span>Bienvenido</span>
-      {% if rol_user %}
-      <p style="color: red;">{{ rol_user }}</p>
-      {% else %}
-      <p>No has iniciado sesión.</p>
-      {% endif %}
-  </div>
-</header>
-
+{% block content %}
 <!-- Breadcrumb Bar -->
 <div class="breadcrumb-bar">
     <div class="breadcrumb-content">
@@ -81,16 +69,10 @@
 </div>
 
 <!-- Modal de confirmación -->
-
-{% endblock header %}
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
 <script>
   function redirectToTarificacion(id) {
       window.location.href = `/listar_tarificacion/${id}/`;
   }
 </script>
-{% endblock js %}
+{% endblock content %}
+

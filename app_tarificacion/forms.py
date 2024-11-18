@@ -39,7 +39,11 @@ class AnexoForm(forms.Form):
     numero_anexo = forms.IntegerField(label='Número de Anexo')
     cargo_fijo = forms.DecimalField(max_digits=10, decimal_places=2, label='Cargo Fijo')
     estado_anexo = forms.ChoiceField(choices=ESTADOS, label='Estado del Anexo')
-    usuario_id = forms.ModelChoiceField(queryset=Usuario.objects.all(), label='Usuario', to_field_name='username')
+    usuario_id = forms.ModelChoiceField(
+        queryset=Usuario.objects.filter(rol_usuario='Responsable de Unidad'),
+        label='Usuario',
+        to_field_name='username'
+    )
     codunidad_id = forms.ModelChoiceField(queryset=Codunidad.objects.all(), label='Código Unidad', to_field_name='nombre_codigo')
     
 

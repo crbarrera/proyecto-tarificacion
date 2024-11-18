@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
     <title>Añadir Proveedor</title>
+    {% endblock title %}
+    {% block css %}
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <style>
         html, body {
             height: 100%;
@@ -25,7 +26,7 @@
             padding: 20px; /* Ensure padding matches breadcrumb */
         }
         .header {
-            height: 56px; /* Adjust as needed */
+            {% comment %} height: 56px; /* Adjust as needed */ {% endcomment %}
             background-color: #cdd0d3; /* Gradient from dark to light grey */
             border-bottom: 1px solid #ddd;
             display: flex;
@@ -124,17 +125,8 @@
           width: 100%; /* Ensure inputs take full width */
         }
     </style>
-</head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <h2>Tarificación Telefónica</h2>
-        <div class="welcome">
-            <span>Bienvenido</span>
-            <span class="admin">Administrador</span>
-        </div>
-    </header>
-
+{% endblock css %}
+{% block content %}
     <!-- Breadcrumb Bar -->
     <div class="breadcrumb-bar">
         <div class="breadcrumb-content">
@@ -186,9 +178,4 @@
           </main>          
         </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-</body>
-</html>
+    {% endblock content %}

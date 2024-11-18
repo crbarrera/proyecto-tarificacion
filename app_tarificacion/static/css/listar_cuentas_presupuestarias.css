@@ -132,3 +132,27 @@ html, body {
     white-space: nowrap; /* Prevent text wrapping */
     border: 1px solid black; /* Black border for buttons */
 }
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .titulo {
+        text-align: center;
+    }
+    .table-container {
+        overflow: auto;
+    }
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .top-bar form {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

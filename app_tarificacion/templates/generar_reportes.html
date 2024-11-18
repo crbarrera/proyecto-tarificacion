@@ -6,6 +6,7 @@
 {% block css %}
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="{% static 'css/listar_tarificacion.css' %}">
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
 <style>
     .highlight {
         background-color: #f8f9fa;
@@ -19,16 +20,7 @@
     }
 </style>
 {% endblock css %}
-{% block header %}
-<!-- Header -->
-<header class="header">
-    <h2>Tarificación Telefónica</h2>
-    <div class="welcome">
-        <span>Bienvenido</span>
-        <span class="admin">Administrador</span>
-    </div>
-</header>
-
+{% block content %}
 <!-- Breadcrumb Bar -->
 <div class="breadcrumb-bar">
     <div class="breadcrumb-content">
@@ -46,14 +38,15 @@
               </div>
               <div class="details-content">
                 <div class="text-center mb-4">
-                  <button onclick="window.location.href='{% url 'reporte_general' %}?download=pdf'" class="btn btn-primary mr-2">Generar Reporte General PDF</button>
-                  <button onclick="window.location.href='{% url 'reporte_general_xls' %}'" class="btn btn-primary mr-2">Generar Reporte General XLS</button>
-                  <button onclick="enviarReporteGeneral()" class="btn btn-secondary">Enviar Reporte General al Correo</button>
+                  <button style="width: 250px;" onclick="window.location.href='{% url 'reporte_general' %}?download=pdf'" class="btn btn-primary mr-2">Generar Reporte General PDF</button>
+                  <button style="width: 250px;" onclick="window.location.href='{% url 'reporte_general_xls' %}'" class="btn btn-primary mr-2">Generar Reporte General XLS</button>
+                  <button style="width: 250px;" onclick="enviarReporteGeneral()" class="btn btn-secondary">Enviar Reporte General al Correo</button>
                 </div>
                 <div class="d-flex justify-content-center">
                     <div class="highlight text-center">
                         <label for="responsable" class="mr-2">Responsable de Unidad:</label>
                         <select id="responsable" class="form-control d-inline-block w-auto">
+                          <option value="" disabled selected>Seleccionar responsable</option>
                           {% for usuario in usuarios %}
                               <option value="{{ usuario.username }}">{{ usuario.username }}</option>
                           {% endfor %}
@@ -68,12 +61,6 @@
       </main>
   </div>
 </div>
-
-{% endblock header %}
-{% block js %}
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
     function generarReporteGeneral() {
         window.location.href = "{% url 'reporte_general' %}";
@@ -111,4 +98,4 @@
         window.location.href = `/reporte_responsable_xls/${responsable}/`;
     }
 </script>
-{% endblock js %}
+{% endblock content %}

@@ -6,17 +6,9 @@
     {% block css %}
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/listar_responsables_unidad.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
     {% endblock css %}
-    {% block header %}
-    <!-- Header -->
-    <header class="header">
-        <h2>Tarificación Telefónica</h2>
-        <div class="welcome">
-            <span>Bienvenido</span>
-            <span class="admin">Administrador</span>
-        </div>
-    </header>
-    {% endblock header %}
+ 
     {% block content %}
     <!-- Breadcrumb Bar -->
     <div class="breadcrumb-bar">
@@ -31,7 +23,7 @@
             <main role="main" class="col-12 main-content">
               <div class="table-container">
                   <div class="top-bar">
-                      <h3>RESPONSABLES DE UNIDAD</h3>
+                      <h3 class="titulo">RESPONSABLES DE UNIDAD</h3>
                       <form id="search-form" hx-get="{% url 'listar_responsables_unidad' %}" hx-trigger="keyup changed delay:500ms" hx-target="#anexo-results">
                           <input type="text" name="query" class="form-control" placeholder="Buscar...">
                       </form>
@@ -77,8 +69,7 @@
           
         </div>
     </div>
-    {% endblock content %}
-    {% block js %}
+
     <script>
         function mostrarDetalles(username, correo, rol) {
             const detallesDiv = document.getElementById('detalles-usuario');
@@ -89,8 +80,4 @@
             `;
         }
     </script>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    {% endblock js %}
+{% endblock content %}

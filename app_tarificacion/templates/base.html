@@ -1,19 +1,99 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% block title %}<title></title>{% endblock title %}
-    {% block css %}{% endblock css %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    {% endblock css %}
 </head>
 <body>
     {% block header %}
-
+    <header class="header d-flex justify-content-between align-items-center">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon">
+                <i class="fas fa-bars"></i>
+            </span>
+        </button>
+        <h3 class="text-center flex-grow-1" style="font-weight: bold;">Sistema de Tarificación Telefónica</h3>
+    </header>
+    <nav class="collapse navbar-collapse" id="navbarNav" style="overflow-y: scroll; max-height: 80vh;">
+        <ul class="nav flex-column">
+            {% if rol_user == "Responsable de Unidad" %}
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/consultar_tarificacion_anexo">Consultar tarificación por Anexo</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/consultar_tarificacion_codigo">Consultar tarificación Cod. de Unidad</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/usuarios">Mantener datos de usuarios</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/proveedores">Mantener proveedores de telefonía</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/codigos_unidad">Mantener códigos de unidad</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/cuentas_presupuestarias">Mantener cuentas presupuestarias</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/anexos">Mantener registros de anexos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/calcular_tarificacion">Calcular tarificación</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/consultar_tarificacion_anexo">Consultar tarificación por Anexo</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/consultar_tarificacion_codigo">Consultar tarificación Cod. de Unidad</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/generar_reportes">Generar reportes de tarificación</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/consultar_trafico_por_proveedor">Consultar tráfico de llamadas por proveedor de telefonía</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/responsables_unidad">Listar responsables de unidad</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/anexos_activos">Listar anexos en servicio</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/estadisticas">Estadísticas de Tarifas Telefónicas</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit">Cerrar Sesión</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
     {% endblock header %}
     {% block content %}
         
     {% endblock content %}
     {% block js %}
+    
     {% endblock js %}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>

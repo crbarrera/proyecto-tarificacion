@@ -1042,7 +1042,7 @@ def enviar_reporte(request, id_tarificacion):
     subject = 'Reporte de Tarificación'
     body = 'Adjunto encontrarás el reporte de tarificación solicitado.'
     from_email = 'sistematarificacion@gmail.com'  # Debes configurar EMAIL_HOST_USER en tu settings.py
-    to_email = 'sistematarificacion@gmail.com'  # Cambia esto al correo electrónico al que quieres enviar los datos de la agenda
+    to_email = 'cr.barrera@duocuc.cl'  # Cambia esto al correo electrónico al que quieres enviar los datos de la agenda
     
     email = EmailMessage(subject, body, from_email, [to_email])
     
@@ -1420,7 +1420,7 @@ def enviar_reporte_general(request):
     subject = 'Reporte General de Llamadas'
     body = 'Adjunto encontrarás el reporte general de llamadas solicitado.'
     from_email = 'sistematarificacion@gmail.com'  # Debes configurar EMAIL_HOST_USER en tu settings.py
-    to_emails = ['sistematarificacion@gmail.com', 'sistematarificacion@gmail.com', 'sistematarificacion@gmail.com']  # Lista de destinatarios
+    to_emails = ['cr.barrera@duocuc.cl']  # Lista de destinatarios
 
     email = EmailMessage(subject, body, from_email, to_emails)
     

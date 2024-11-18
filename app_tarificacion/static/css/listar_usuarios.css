@@ -132,3 +132,40 @@ html, body {
     white-space: nowrap; /* Prevent text wrapping */
     border: 1px solid black; /* Black border for buttons */
 }
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .titulo {
+        text-align: center;
+    }
+    .table-container {
+        overflow: auto;
+    }
+    .top-bar {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+    }
+    .top-bar button,
+    .top-bar form {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    form{
+        justify-content: center;
+    }
+    h3 {
+      text-align: center;
+    }
+    #search-form {
+      align-self: center;
+      display: flex;
+    }
+
+    
+}

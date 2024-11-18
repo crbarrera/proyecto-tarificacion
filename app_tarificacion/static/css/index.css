@@ -25,9 +25,15 @@ html, body {
 .nav-item {
     border-bottom: 1px solid #000000;
     padding: 4px 0;
+    color: #000000;
 }
+
+.text-center flex-grow-1{
+    font-size: 20px;
+}
+
 .header {
-    height: 56px; /* Adjust as needed */
+    height: 75px; /* Adjust as needed */
     background-color: #cdd0d3; /* Light grey */
     border-bottom: 1px solid #ddd;
     display: flex;
@@ -115,58 +121,69 @@ html, body {
     align-items: flex-start; /* Alineación a la izquierda */
     margin-left: 20px; /* Asegura que los botones estén alineados a la izquierda de la página */
 }
+/* Estilos para el menú de hamburguesa */
+.navbar-toggler {
+    border: none;
+}
+
+/* .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+} */
+
+.cerrar-sesion {
+    margin-top: 10px;
+}
+
+.header {
+    background-color: #cdd0d3;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.header h2 {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.nav-item .nav-link {
+    color: black;
+    background-color: #cdd0d349;
+}
+
+.navbar-collapse {
+    overflow-y: auto;
+    background-color: #3c3c3c49;
+    max-height: calc(100vh - 56px); /* Ajusta el valor según la altura del header */
+    position: absolute;
+    z-index: 1000;
+    background-color: #d0cece;
+
+}
 
 @media (max-width: 768px) {
-    .header {
-        text-align: center;
-    }
-
     .sidebar {
         display: none;
     }
-
     .main-content {
         margin-left: 0;
     }
-
-    .cerrar-sesion {
-        visibility: hidden;
-        opacity: 0;
-    }
+}
+.nav-link {
+    color: black !important;
+    background-color: #cdd0d349;
 }
 
-@media (min-width: 769px) and (max-width: 1024px) {
-    .header {
-        padding: 20px 0;
-    }
-
-    .sidebar {
-        padding: 15px;
-    }
-
-    .main-content {
-        margin-left: 25%;
-    }
-
-    .cerrar-sesion {
-        text-align: right;
-    }
+.header h2 {
+    font-size: 1.5rem; /* Ajusta el tamaño del texto del título */
+    margin: 0;
+    white-space: nowrap; /* Asegura que el texto no se quiebre en líneas nuevas */
+    overflow: hidden; /* Oculta cualquier desbordamiento del texto */
+    text-overflow: ellipsis; /* Añade puntos suspensivos si el texto es muy largo */
 }
 
-@media (min-width: 1025px) {
-    .header {
-        padding: 20px 0;
-    }
-
-    .sidebar {
-        padding: 20px;
-    }
-
-    .main-content {
-        margin-left: 200px;
-    }
-
-    .cerrar-sesion {
-        text-align: right;
-    }
+.navbar-toggler-icon {
+  display: inline;
 }
+
+
