@@ -44,7 +44,7 @@
                                     <td>{{ trafico.proveedor__nombre_proveedor }}</td>
                                     <td>{{ trafico.total_duracion }}</td>
                                     <td>{{ trafico.total_minutos_facturados|floatformat:2 }}</td>
-                                    <td><button class="btn btn-warning" onclick="mostrarDetalles('{{ trafico.proveedor__nombre_proveedor }}', '{{ trafico.total_duracion }}', '{{ trafico.total_minutos_facturados|floatformat:2 }}')">Seleccionar</button></td>
+                                    <td><button class="btn btn-warning" onclick="mostrarDetalles('{{ trafico.proveedor__nombre_proveedor }}', '{{ trafico.total_duracion }}', '{{ trafico.total_minutos_facturados|floatformat:2 }}')">Seleccionar Proveedor</button></td>
                                 </tr>
                                 {% empty %}
                                 <tr>
